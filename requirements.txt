@@ -1,0 +1,6 @@
+aiogram==3.3.0
+asyncio
+requests
+pandas
+mysql-connector-python==8.0.28
+pydantic>=1.2,<2.6
