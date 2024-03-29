@@ -4,7 +4,7 @@ import json
 class HhRuSpider(scrapy.Spider):
     name = 'hh_ru'
     allowed_domains = ['hh.ru']
-    start_urls = ['https://hh.ru/search/vacancy']
+    start_urls = ['https://spb.hh.ru/search/vacancy']
 
     def parse(self, response):
         # Парсим ссылки на страницы с вакансиями
