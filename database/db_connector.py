@@ -16,4 +16,7 @@ class Database:
             autocommit=True
         )
 
-    # Другие методы вашего класса Database
+    async def close(self):
+        if self.pool is not None:
+            self.pool.close()
+            await self.pool.wait_closed()
