@@ -5,7 +5,9 @@ from aiogram.types import ParseMode, InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
+
 from config import TOKEN
+
 from database.db_connector import add_user_to_db, add_user_info_to_db
 
 logging.basicConfig(level=logging.INFO)
