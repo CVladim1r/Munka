@@ -1,22 +1,11 @@
-import aiomysql
+import mysql.connector
+from config import DB_CONFIG
+import logging
 
-class Database:
-    def __init__(self, loop, **kwargs):
-        self.loop = loop
-        self.pool = None
-        self.config = kwargs
-
-    async def connect(self):
-        self.pool = await aiomysql.create_pool(
-            host=self.config['host'],
-            user=self.config['user'],
-            password=self.config['password'],
-            db=self.config['database'],
-            loop=self.loop,
-            autocommit=True
-        )
-
-    async def close(self):
-        if self.pool is not None:
-            self.pool.close()
-            await self.pool.wait_closed()
+async def create_connection():
+    try:
+        conn = mysql.connector.connect(**DB_CONFIG)
+        return conn
+    except mysql.connector.Error as e:
+        logging.error(f"Error connecting to MySQL: {e}")
+        return None
