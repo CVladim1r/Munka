@@ -38,8 +38,6 @@ async def add_user_to_db(message, user_id, user, user_name, user_type):
         finally:
             conn.close()
 
-
-
 async def add_user_info_to_db(user_id, name, age, description, company_name):
     conn = await create_connection()
     if conn:
@@ -145,3 +143,38 @@ async def update_user_name(user_id, new_name):
             logging.error(f"Error updating user name in database: {e}")
         finally:
             conn.close()
+
+async def user_exists_in_db(user_id):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM users WHERE user_id = %s", (user_id,))
+            result = cursor.fetchone()
+            cursor.close()
+            if result and result[0] > 0:
+                return True
+            else:
+                return False
+        except mysql.connector.Error as e:
+            logging.error(f"Error checking if user exists in database: {e}")
+        finally:
+            conn.close()
+    return False
+
+
+async def get_user_data(user_id):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
+            user_data = cursor.fetchone()
+            cursor.close()
+            return user_data
+        except mysql.connector.Error as e:
+            logging.error(f"Error fetching user data from database: {e}")
+        finally:
+            conn.close()
+    return None
+
