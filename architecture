@@ -1,24 +1,39 @@
+Схема проекта:
+
 JFBot/
 │
-├── config.py                # Файл с конфигурацией (токен бота, настройки базы данных и т.д.)
-│
 ├── bot/
-│   ├── __init__.py          # Инициализация пакета
-│   ├── handlers.py          # Обработчики команд и сообщений от пользователя
-│   └── utils.py             # Вспомогательные функции для работы с ботом
+│   ├── __init__.py
+│   ├── employer_registration_dialog.py
+│   ├── employer_registration.py
+│   ├── handlers.py
+│   ├── job_seeker_registration_dialog.py
+│   ├── user_registration.py
+│   └── utils.py
 │
 ├── models/
-│   ├── __init__.py          # Инициализация пакета
-│   ├── user.py              # Модель пользователя
-│   └── vacancy.py           # Модель вакансии
+│   ├── __init__.py
+│   ├── user.py
+│   └── vacancy.py
 │
 ├── database/
-│   ├── __init__.py          # Инициализация пакета
-│   └── db_connector.py      # Модуль для подключения к базе данных
+│   ├── __init__.py
+│   └── db_connector.py
 │
 ├── data/
-│   └── vacancies.csv        # Файл с данными о вакансиях
+│   └── vacancies.csv
+│   
+├── parser/
+│   ├── HeadHunter/
+│   │   ├── pars-upt.py
+│   │   ├── start-parser.py
+│   │   ├── vacancies.py
+│   │   └── hh-ru.py
+│   └── main.py
 │
-├── requirements.txt         # Файл с зависимостями Python
-│
-└── main.py                  # Основной файл для запуска бота
+├── main.py
+├── config.py
+├── architecture.txt
+├── createDB.sql
+├── README.md
+└── requirements.txt
