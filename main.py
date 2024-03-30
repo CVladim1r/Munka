@@ -64,7 +64,14 @@ async def start(message: types.Message, state: FSMContext):
     await message.answer("Привет! Вы соискатель или работодатель?", reply_markup=keyboard)
     await UserForm.next()
 
+async def main_menu(user_id, user_name):
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(KeyboardButton("🔍 Искать Вакансии"))
+    keyboard.add(KeyboardButton("👤 Личный кабинет"))
+    keyboard.add(KeyboardButton("✏️ Редактировать резюме"))
+    keyboard.add(KeyboardButton("ℹ️ О боте"))
 
+    await bot.send_message(user_id, f"С возвращением ПИВНОЙ ГРИБ, {user_name}! Прямо сейчас ты можешь начать просмотр вакансий или изменить данные в профиле. Команда /help для помощи", reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data in ["job_seeker", "employer"], state="*")
 async def process_user_type(callback_query: types.CallbackQuery, state: FSMContext):
@@ -125,6 +132,7 @@ async def process_description(message: types.Message, state: FSMContext):
     await update_user_description(message.from_user.id, data['description'])
     await add_user_info_to_db(message.from_user.id, data.get('nickname'), data.get('age'), data.get('description'), None)
     await message.answer("Спасибо за регистрацию.")
+    await main_menu(message.from_user.id, message.from_user.username)
     await state.finish()
 
 
@@ -137,7 +145,6 @@ async def about_bot(message: types.Message):
 async def personal_cabinet(message: types.Message):
     user_id = message.from_user.id
 
-    # Fetch user data from the database
     user_data = await get_user_data(user_id)
 
     if user_data:
@@ -154,9 +161,15 @@ async def personal_cabinet(message: types.Message):
 
         user_info_text = f"Имя: {name}\nВозраст: {age}\nОписание: {description}\nМестоположение: {location}\nСтатус: {status}"
 
-        await message.answer(user_info_text)
+        keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+        keyboard.add(KeyboardButton("Заполнить анкету заново"))
+        keyboard.add(KeyboardButton("Изменить описание"))
+        keyboard.add(KeyboardButton("Смотреть вакансии"))
+
+        await message.answer(user_info_text, reply_markup=keyboard)
     else:
         await message.answer("Информация о пользователе не найдена.")
+
 
 @dp.message_handler(commands=['help'], state="*")
 async def help_command(message: types.Message):

@@ -27,8 +27,6 @@ def parse_vacancy(vacancy):
         else:
             skills = None
 
-
-
         vacancy["Description"] = description
         vacancy["Skills"] = skills
     else:
