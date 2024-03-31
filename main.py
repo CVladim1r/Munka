@@ -1,4 +1,6 @@
 import logging
+import asyncio
+
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
@@ -7,11 +9,11 @@ from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-
+import aiogram
 from bot.user_registration import register_job_seeker, register_employer
 
-from database.db_connector import add_user_to_db, get_user_data, user_exists_in_db, update_user_location, add_user_info_to_db, update_user_age, update_user_description, update_user_name
-
+from database.db_connector import get_user_data, get_employer_data, update_user_location, add_user_info_to_db, update_user_age, update_user_description, update_user_name
+from database.db_connector import add_user_to_db_type_user, add_user_to_db_type_employer
 from config import TOKEN
 
 logging.basicConfig(level=logging.INFO)
@@ -29,79 +31,118 @@ class UserForm(StatesGroup):
     company_name = State()
     location = State()
 
-
 @dp.message_handler(commands=['start'], state="*")
 async def start(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user_name = message.from_user.username
+    name = ""
     user = message.from_user.first_name if not message.from_user.username else message.from_user.username
     
     if not user_name:
         user_name = str(user_id)
-
-    # Check if the user already exists in the database
+        
     user_data = await get_user_data(user_id)
+    employer_data = await get_employer_data(user_id)
 
-    if user_data:
+
+    if employer_data:
+        name = employer_data.get("name")
+        await main_menu_employer(message.from_user.id)
+        return
+    elif user_data:
+        name = user_data.get("name")
         user_type = user_data.get("user_type")
         if user_type == "USER":
-            keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
-            keyboard.add(KeyboardButton("🔍 Искать Вакансии"))
-            keyboard.add(KeyboardButton("👤 Личный кабинет"))
-            keyboard.add(KeyboardButton("✏️ Редактировать резюме"))
-            keyboard.add(KeyboardButton("ℹ️ О боте"))
-
-            await message.answer(f"С возвращением , {user_name}! Прямо сейчас ты можешь начать просмотр вакансий или изменить данные в профиле. Команда /help для помощи", reply_markup=keyboard)
-            await message.answer("Выберите действие:", reply_markup=keyboard)
+            await main_menu_user(message.from_user.id, message.message_id)
             return
+        
 
-    await add_user_to_db(message, user_id, user, user_name, None)
-
+    
+    # Если пользователь не найден в базе данных или не является "EMPLOYER",
+    # предлагаем ему выбрать тип пользователя с помощью кнопок
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("Соискатель", callback_data="job_seeker"))
     keyboard.add(InlineKeyboardButton("Работодатель", callback_data="employer"))
-
-    await message.answer("Привет! Вы соискатель или работодатель?", reply_markup=keyboard)
+    await bot.send_message(message.chat.id, '''Привет я кот Миша.\n
+Я выполняю здесь самую главную функцию: помогаю соискателям и работодателям найти друг друга. 
+Представь, у каждого есть работа, а в мире царит гармония – мяу, красота. Для этого я здесь.''')
+    await asyncio.sleep(5)
+    await message.answer("Давай теперь познакомимся поближе. Кто ты?", reply_markup=keyboard)
     await UserForm.next()
 
-async def main_menu(user_id, user_name):
+
+async def main_menu_user(user_id, message_id):
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(KeyboardButton("🔍 Искать Вакансии"))
     keyboard.add(KeyboardButton("👤 Личный кабинет"))
     keyboard.add(KeyboardButton("✏️ Редактировать резюме"))
     keyboard.add(KeyboardButton("ℹ️ О боте"))
 
-    await bot.send_message(user_id, f"С возвращением ПИВНОЙ ГРИБ, {user_name}! Прямо сейчас ты можешь начать просмотр вакансий или изменить данные в профиле. Команда /help для помощи", reply_markup=keyboard)
+    main_text = "Искать вакансии:\n"
+    main_text += "Личный кабинет\n"
+    main_text += "Редактировать резюме\n"
+    main_text += "О боте\n"
+
+    await bot.send_message(user_id, main_text, reply_markup=keyboard)
+
+
+async def main_menu_employer(user_id):
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
+    keyboard.add(KeyboardButton("🔍 Опубликовать вакансию"))
+    keyboard.add(KeyboardButton("👤 Информация о компании"))
+    keyboard.add(KeyboardButton("ℹ️ О боте"))
+
+
+    main_text = "Искать вакансии:\n"
+    main_text += "Личный кабинет\n"
+    main_text += "Редактировать резюме\n"
+    main_text += "О боте\n"
+
+    await bot.send_message(user_id, f"{main_text}", reply_markup=keyboard)
 
 @dp.callback_query_handler(lambda c: c.data in ["job_seeker", "employer"], state="*")
 async def process_user_type(callback_query: types.CallbackQuery, state: FSMContext):
     user_type = callback_query.data
+
+    employer_id = callback_query.from_user.id
+    employer_username = callback_query.from_user.username
+    user = callback_query.from_user.first_name if not callback_query.from_user.username else callback_query.from_user.username
+
+    user_id = callback_query.from_user.id
+    user_name = callback_query.from_user.username
+    
     await state.update_data(user_type=user_type)
 
     if user_type == "job_seeker":
-        await callback_query.message.answer("Вы выбрали: Соискатель.")
+        await add_user_to_db_type_user(callback_query.message, user_id, user, user_name, None)
         await register_job_seeker(callback_query.message, callback_query.from_user.id, callback_query.from_user.username, callback_query.from_user.username)
 
         await callback_query.message.answer("Давай создадим резюме. Напиши свой возраст:")
         await UserForm.regStart.set()
 
     elif user_type == "employer":
-        await callback_query.message.answer("Вы выбрали: Работодатель.")
+        await add_user_to_db_type_employer(callback_query.message, employer_id, employer_username, user, None)
         await register_employer(callback_query.message, callback_query.from_user.id, callback_query.from_user.username, callback_query.from_user.username)
+        await callback_query.message.answer("Спасибо за регистрацию.")
+        await main_menu_employer(callback_query.message.from_user.id, callback_query.message.message_id)
 
     await UserForm.next()
+
+
+
+
 
 @dp.message_handler(state=UserForm.age)
 async def process_age(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        if not message.text.isdigit():
-            await message.answer("Неверный формат возраста. Пожалуйста, введите возраст цифрами.")
+        if not message.text.isdigit() or not (0 < int(message.text) < 99):
+            await message.answer("Неверный формат возраста. Пожалуйста, введите возраст цифрами. Пример: 18")
             return
         data['age'] = message.text
     await update_user_age(message.from_user.id, data['age'])
     await UserForm.location.set()
     await message.answer("Какой ваш город?")
-    # Создаем клавиатуру с кнопками для выбора города
+
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(KeyboardButton("Санкт-Петербург"))
     keyboard.add(KeyboardButton("Москва"))
@@ -132,8 +173,12 @@ async def process_description(message: types.Message, state: FSMContext):
     await update_user_description(message.from_user.id, data['description'])
     await add_user_info_to_db(message.from_user.id, data.get('nickname'), data.get('age'), data.get('description'), None)
     await message.answer("Спасибо за регистрацию.")
-    await main_menu(message.from_user.id, message.from_user.username)
+    await main_menu_user(message.from_user.id, message.message_id)
     await state.finish()
+
+
+
+
 
 
 @dp.message_handler(lambda message: message.text == "ℹ️ О боте", state="*")
@@ -165,11 +210,32 @@ async def personal_cabinet(message: types.Message):
         keyboard.add(KeyboardButton("Заполнить анкету заново"))
         keyboard.add(KeyboardButton("Изменить описание"))
         keyboard.add(KeyboardButton("Смотреть вакансии"))
+        keyboard.add(KeyboardButton("Назад"))
 
         await message.answer(user_info_text, reply_markup=keyboard)
     else:
         await message.answer("Информация о пользователе не найдена.")
 
+@dp.message_handler(lambda message: message.text == "Назад", state="*")
+async def back_to_main_menu(message: types.Message):
+    user_id = message.from_user.id
+
+    user_data = await get_user_data(user_id)
+
+    if user_data:
+        name = user_data.get("name")
+        await main_menu_user(user_id, name)
+    else:
+        await message.answer("Информация о пользователе не найдена. Пройдите регистрацию нажав на команду /start")
+
+
+
+
+
+
+
+
+# Команды доступные для любого типа пользователя
 
 @dp.message_handler(commands=['help'], state="*")
 async def help_command(message: types.Message):
@@ -182,7 +248,6 @@ async def help_command(message: types.Message):
     help_text += "О боте - Информация о боте\n"
 
     await message.answer(help_text)
-
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

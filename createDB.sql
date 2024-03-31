@@ -12,10 +12,10 @@ CREATE TABLE IF NOT EXISTS USERS (
     company_name VARCHAR(255)
 );
 
-CREATE TABLE IF NOT EXISTS VACANCIES (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    description TEXT,
-    name VARCHAR(255),
-    user_name VARCHAR(255),
-    age_for_vacancies INT,
+CREATE TABLE IF NOT EXISTS employers (
+    employer_id INT AUTO_INCREMENT PRIMARY KEY,
+    employer_username VARCHAR(32) UNIQUE,
+    employer_name VARCHAR(255),
+    company_name VARCHAR(255),
+    description TEXT
 );

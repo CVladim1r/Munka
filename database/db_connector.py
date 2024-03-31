@@ -4,6 +4,8 @@ from config import DB_CONFIG
 
 logging.basicConfig(level=logging.INFO)
 
+# Соединение с БД
+
 async def create_connection():
     try:
         conn = mysql.connector.connect(**DB_CONFIG)
@@ -12,7 +14,10 @@ async def create_connection():
         logging.error(f"Error connecting to MySQL: {e}")
         return None
 
-async def add_user_to_db(message, user_id, user, user_name, user_type):
+   
+# ТОЛЬКО ДЛЯ ТИПА USER
+
+async def add_user_to_db_type_user(message, user_id, user, user_name, user_type):
     conn = await create_connection()
     if conn:
         try:
@@ -53,6 +58,41 @@ async def add_user_info_to_db(user_id, name, age, description, company_name):
             logging.error(f"Error adding user info to database: {e}")
         finally:
             conn.close()
+
+async def user_exists_in_db(user_id):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("SELECT COUNT(*) FROM users WHERE user_id = %s", (user_id,))
+            result = cursor.fetchone()
+            cursor.close()
+            if result and result[0] > 0:
+                return True
+            else:
+                return False
+        except mysql.connector.Error as e:
+            logging.error(f"Error checking if user exists in database: {e}")
+        finally:
+            conn.close()
+    return False
+
+async def get_user_data(user_id):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
+            user_data = cursor.fetchone()
+            cursor.close()
+            return user_data
+        except mysql.connector.Error as e:
+            logging.error(f"Error fetching user data from database: {e}")
+        finally:
+            conn.close()
+    return None
+
+# ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
 
 async def update_user_in_db(user_id, name, age, description, company_name):
     conn = await create_connection()
@@ -144,30 +184,72 @@ async def update_user_name(user_id, new_name):
         finally:
             conn.close()
 
-async def user_exists_in_db(user_id):
+
+
+
+
+# ТОЛЬКО ДЛЯ ТИПА EMPLOYER
+
+async def add_user_to_db_type_employer(message, employer_id, employer_username, employer_name, employer_type):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM users WHERE user_id = %s", (user_id,))
-            result = cursor.fetchone()
+            cursor.execute("INSERT INTO employers (employer_id, employer_name, employer_username, employer_type) VALUES (%s, %s, %s, %s) "
+                           "ON DUPLICATE KEY UPDATE employer_name=VALUES(employer_name), employer_type=VALUES(employer_type), employer_username=IF(VALUES(employer_username) <> '', VALUES(employer_username), employer_username)",
+                           (employer_id, employer_name, employer_username, employer_type))
+            conn.commit()
+            logging.info(f"User with ID {employer_id} added to the database")
             cursor.close()
-            if result and result[0] > 0:
-                return True
-            else:
-                return False
         except mysql.connector.Error as e:
-            logging.error(f"Error checking if user exists in database: {e}")
+            logging.error(f"Error adding user to database: {e}")
         finally:
             conn.close()
-    return False
 
-async def get_user_data(user_id):
+async def update_employer_type(employer_id, new_employer_type):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE employers SET employer_type = %s WHERE employer_id = %s",
+                           (new_employer_type, employer_id))
+            conn.commit()
+            logging.info(f"User with ID {employer_id} updated with new user type: {new_employer_type}")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error updating user type in database: {e}")
+        finally:
+            conn.close()
+
+async def add_employer_to_db(message, employer_id, employer_username, employer_name, employer_type):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            if message.from_user.username:
+                cursor.execute("SELECT employer_username FROM employers WHERE employer_id = %s", (employer_id,))
+                result = cursor.fetchone()
+                if result and result[0]:
+                    user_name = result[0]
+                else:
+                    user_name = f"@{message.from_user.username}"
+            cursor.execute("INSERT INTO employers (employer_id, employer_name, employer_username, employer_type) VALUES (%s, %s, %s, %s) "
+                           "ON DUPLICATE KEY UPDATE employer_name=VALUES(employer_name), employer_type=VALUES(employer_type), employer_username=IF(VALUES(employer_username) <> '', VALUES(employer_username), employer_username)",
+                           (employer_id, employer_username, employer_name, employer_type))
+            conn.commit()
+            logging.info(f"User with ID {employer_id} added to the database")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error adding user to database: {e}")
+        finally:
+            conn.close()
+
+async def get_employer_data(employer_id):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
+            cursor.execute("SELECT * FROM employers WHERE employer_id = %s", (employer_id,))
             user_data = cursor.fetchone()
             cursor.close()
             return user_data
@@ -176,4 +258,3 @@ async def get_user_data(user_id):
         finally:
             conn.close()
     return None
-
