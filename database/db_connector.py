@@ -162,7 +162,6 @@ async def user_exists_in_db(user_id):
             conn.close()
     return False
 
-
 async def get_user_data(user_id):
     conn = await create_connection()
     if conn:
