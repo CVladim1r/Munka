@@ -44,10 +44,10 @@ async def start(message: types.Message, state: FSMContext):
     user_data = await get_user_data(user_id)
     employer_data = await get_employer_data(user_id)
 
-
     if employer_data:
         name = employer_data.get("name")
-        await main_menu_employer(message.from_user.id)
+        await main_menu_employer(message.from_user.id, message.message_id)
+
         return
     elif user_data:
         name = user_data.get("name")
@@ -55,11 +55,6 @@ async def start(message: types.Message, state: FSMContext):
         if user_type == "USER":
             await main_menu_user(message.from_user.id, message.message_id)
             return
-        
-
-    
-    # Если пользователь не найден в базе данных или не является "EMPLOYER",
-    # предлагаем ему выбрать тип пользователя с помощью кнопок
     keyboard = InlineKeyboardMarkup()
     keyboard.add(InlineKeyboardButton("Соискатель", callback_data="job_seeker"))
     keyboard.add(InlineKeyboardButton("Работодатель", callback_data="employer"))
@@ -92,13 +87,13 @@ async def main_menu_employer(user_id):
     keyboard.add(KeyboardButton("👤 Информация о компании"))
     keyboard.add(KeyboardButton("ℹ️ О боте"))
 
-
     main_text = "Искать вакансии:\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
 
     await bot.send_message(user_id, f"{main_text}", reply_markup=keyboard)
+
 
 @dp.callback_query_handler(lambda c: c.data in ["job_seeker", "employer"], state="*")
 async def process_user_type(callback_query: types.CallbackQuery, state: FSMContext):
@@ -125,6 +120,7 @@ async def process_user_type(callback_query: types.CallbackQuery, state: FSMConte
         await register_employer(callback_query.message, callback_query.from_user.id, callback_query.from_user.username, callback_query.from_user.username)
         await callback_query.message.answer("Спасибо за регистрацию.")
         await main_menu_employer(callback_query.message.from_user.id, callback_query.message.message_id)
+        
 
     await UserForm.next()
 
@@ -171,7 +167,7 @@ async def process_description(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['description'] = message.text
     await update_user_description(message.from_user.id, data['description'])
-    await add_user_info_to_db(message.from_user.id, data.get('nickname'), data.get('age'), data.get('description'), None)
+    await add_user_info_to_db(message.from_user.id, data.get('nickname'), data.get('age'), data.get('description'))
     await message.answer("Спасибо за регистрацию.")
     await main_menu_user(message.from_user.id, message.message_id)
     await state.finish()

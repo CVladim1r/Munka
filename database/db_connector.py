@@ -43,14 +43,15 @@ async def add_user_to_db_type_user(message, user_id, user, user_name, user_type)
         finally:
             conn.close()
 
-async def add_user_info_to_db(user_id, name, age, description, company_name):
+async def add_user_info_to_db(user_id, name, age, description):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (user_id, name, age, description, company_name) VALUES (%s, %s, %s, %s, %s) "
-                           "ON DUPLICATE KEY UPDATE name=VALUES(name), age=VALUES(age), description=VALUES(description), company_name=VALUES(company_name)",
-                           (user_id, name, age, description, company_name))
+            cursor.execute("INSERT INTO users (user_id, name, age, description) VALUES (%s, %s, %s, %s) "
+                        "ON DUPLICATE KEY UPDATE name=VALUES(name), age=VALUES(age), description=VALUES(description)",
+                        (user_id, name, age, description))
+
             conn.commit()
             logging.info(f"User info added to the database for user with ID {user_id}")
             cursor.close()
@@ -94,13 +95,13 @@ async def get_user_data(user_id):
 
 # ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
 
-async def update_user_in_db(user_id, name, age, description, company_name):
+async def update_user_in_db(user_id, name, age, description):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET name = %s, age = %s, description = %s, company_name = %s WHERE user_id = %s",
-                           (name, age, description, company_name, user_id))
+            cursor.execute("UPDATE users SET name = %s, age = %s, description = %s, WHERE user_id = %s",
+                           (name, age, description, user_id))
             conn.commit()
             logging.info(f"User info updated in the database for user with ID {user_id}")
             cursor.close()
@@ -183,9 +184,6 @@ async def update_user_name(user_id, new_name):
             logging.error(f"Error updating user name in database: {e}")
         finally:
             conn.close()
-
-
-
 
 
 # ТОЛЬКО ДЛЯ ТИПА EMPLOYER
