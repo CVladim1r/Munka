@@ -14,7 +14,6 @@ async def create_connection():
         logging.error(f"Error connecting to MySQL: {e}")
         return None
 
-   
 # ТОЛЬКО ДЛЯ ТИПА USER
 
 async def add_user_to_db_type_user(message, user_id, user, user_name, user_type):
@@ -27,10 +26,8 @@ async def add_user_to_db_type_user(message, user_id, user, user_name, user_type)
                 cursor.execute("SELECT nickname FROM users WHERE user_id = %s", (user_id,))
                 result = cursor.fetchone()
                 if result and result[0]:
-                    # Если nickname уже существует и не пустой, используем его
                     user_name = result[0]
                 else:
-                    # Иначе используем username из сообщения и добавляем символ '@'
                     user_name = f"@{message.from_user.username}"
             cursor.execute("INSERT INTO users (user_id, name, nickname, user_type) VALUES (%s, %s, %s, %s) "
                            "ON DUPLICATE KEY UPDATE name=VALUES(name), user_type=VALUES(user_type), nickname=IF(VALUES(nickname) <> '', VALUES(nickname), nickname)",
@@ -256,3 +253,29 @@ async def get_employer_data(employer_id):
         finally:
             conn.close()
     return None
+
+
+# Бот затычка (PLUG_BOT)
+
+async def add_user_to_db_plug_bot(message, user_id, user_name, user_username):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            if message.from_user.username:
+                cursor.execute("SELECT user_name FROM plug_users WHERE user_id = %s", (user_id,))
+                result = cursor.fetchone()
+                if result and result[0]:
+                    user_name = result[0]
+                else:
+                    user_name = f"@{message.from_user.username}"
+            cursor.execute("INSERT INTO plug_users (user_id, user_name, user_username) VALUES (%s, %s, %s) "
+                           "ON DUPLICATE KEY UPDATE user_name=VALUES(user_name), user_username=VALUES(user_username)",
+                           (user_id, user_name, user_username))
+            conn.commit()
+            logging.info(f"User with ID {user_id} added to the database")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error adding user to database: {e}")
+        finally:
+            conn.close()

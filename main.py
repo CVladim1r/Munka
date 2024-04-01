@@ -98,19 +98,18 @@ async def main_menu_employer(user_id):
 @dp.callback_query_handler(lambda c: c.data in ["job_seeker", "employer"], state="*")
 async def process_user_type(callback_query: types.CallbackQuery, state: FSMContext):
     user_type = callback_query.data
-
+    user_id = callback_query.from_user.id
+    
     employer_id = callback_query.from_user.id
     employer_username = callback_query.from_user.username
-    user = callback_query.from_user.first_name if not callback_query.from_user.username else callback_query.from_user.username
 
-    user_id = callback_query.from_user.id
+    user = callback_query.from_user.first_name if not callback_query.from_user.full_name else callback_query.from_user.username
     user_name = callback_query.from_user.username
     
     await state.update_data(user_type=user_type)
 
     if user_type == "job_seeker":
         await add_user_to_db_type_user(callback_query.message, user_id, user, user_name, None)
-        await register_job_seeker(callback_query.message, callback_query.from_user.id, callback_query.from_user.username, callback_query.from_user.username)
 
         await callback_query.message.answer("Давай создадим резюме. Напиши свой возраст:")
         await UserForm.regStart.set()
