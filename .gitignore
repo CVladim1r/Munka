@@ -4,3 +4,6 @@ __pycache__/
 models/
 __pycache__/
 *.__pycache__
+database/
+__pycache__/
+*.__pycache__
