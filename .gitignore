@@ -1,4 +1,4 @@
-bot/__pycache__
-models/__pycache__
-database/__pycache__
-parser/HeadHunter/__pycache__
+JFBOT/bot/__pycache__/
+JFBOT/models/__pycache__/
+JFBOT/database/__pycache__/
+JFBOT/parser/HeadHunter/__pycache__/
