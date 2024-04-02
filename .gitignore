@@ -1,0 +1,11 @@
+# Ignore pycache in all folders
+**/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+database/__pycache__/__init__.cpython-310.pyc
+__pycache__/config.cpython-310.pyc
+bot/__pycache__/__init__.cpython-310.pyc
+bot/__pycache__/user_registration.cpython-310.pyc
+database/__pycache__/db_connector.cpython-310.pyc
+bot/__pycache__/__init__.cpython-310.pyc
