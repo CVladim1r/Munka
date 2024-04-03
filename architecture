@@ -8,8 +8,7 @@ JFBot/
 │   ├── employer_registration.py
 │   ├── handlers.py
 │   ├── job_seeker_registration_dialog.py
-│   ├── user_registration.py
-│   └── utils.py
+│   └── user_registration.py
 │
 ├── models/
 │   ├── __init__.py

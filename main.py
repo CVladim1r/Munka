@@ -171,11 +171,6 @@ async def process_description(message: types.Message, state: FSMContext):
     await main_menu_user(message.from_user.id, message.message_id)
     await state.finish()
 
-
-
-
-
-
 @dp.message_handler(lambda message: message.text == "ℹ️ О боте", state="*")
 async def about_bot(message: types.Message):
     about_text = "Данный бот был создан для помощи компаниям в сфере общепита быстрее найти работников."
@@ -222,10 +217,6 @@ async def back_to_main_menu(message: types.Message):
         await main_menu_user(user_id, name)
     else:
         await message.answer("Информация о пользователе не найдена. Пройдите регистрацию нажав на команду /start")
-
-
-
-
 
 
 
