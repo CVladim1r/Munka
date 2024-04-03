@@ -1,2 +1,38 @@
-1)После нажатия кнопки соискателя, а затем нажатия кнопки работодателя "спасибо за регестрацию"
-2)Любые знаки в выбере имени и в кратком описании
+1) После нажатия кнопки соискателя, а затем нажатия кнопки работодателя "спасибо за регестрацию"
+2) Любые знаки в выбере имени и в кратком описании
+3) Ошибка:
+
+Traceback (most recent call last):
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    updates = await self.bot.get_updates(
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    result = await self.request(api.Methods.GET_UPDATES, payload)
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    return await api.make_request(self.session, self.server, self.__token
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    raise exceptions.NetworkError(f"aiohttp client throws an error: {e.__
+aiogram.utils.exceptions.NetworkError: Aiohttp client throws an error: Cl
+ERROR:aiogram.dispatcher.dispatcher:Cause exception while getting updates
+Traceback (most recent call last):
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    async with session.post(url, data=req, **kwargs) as response:
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    self._resp = await self._coro
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    await resp.start(conn)
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    message, payload = await protocol.read()  # type: ignore[union-attr]
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    await self._waiter
+aiohttp.client_exceptions.ClientOSError: [WinError 64] Указанное сетевое 
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    updates = await self.bot.get_updates(
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+    result = await self.request(api.Methods.GET_UPDATES, payload)
+  File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
+r: {e.__class__.__name__}: {e}")
+aiogram.utils.exceptions.NetworkError: Aiohttp client throws an error: ClientOSError: [WinError 64] Указанное сетевое имя более недоступно

@@ -5,7 +5,7 @@ import json
 def get_vacancies(keywords):
     url = "https://api.hh.ru/vacancies"
     area_id = 2  # Код для Санкт-Петербурга
-    per_page = 2
+    per_page = 3
     vacancies_list = []
 
     headers = {

@@ -1,4 +1,4 @@
-aiogram==2.23.1
+aiogram==2.25.1
 aiohttp
 asyncio
 requests

@@ -1,11 +1,28 @@
-# Ignore pycache in all folders
-**/__pycache__/
+# Byte-compiled / optimized / DLL files
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
+
+# Specific to Python 3.10 byte-compiled files
 database/__pycache__/__init__.cpython-310.pyc
 __pycache__/config.cpython-310.pyc
 bot/__pycache__/__init__.cpython-310.pyc
 bot/__pycache__/user_registration.cpython-310.pyc
 database/__pycache__/db_connector.cpython-310.pyc
 bot/__pycache__/__init__.cpython-310.pyc
+parser/HeadHunter__pycache__/
+*.pyc
+*.pyo
+*.pyd
+bot/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Log files
+bot.log
+
+# Other
+bugs.txt
+config.py
