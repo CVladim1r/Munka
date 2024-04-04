@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import json
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
@@ -13,10 +14,11 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from bot.user_registration import register_job_seeker, register_employer
 from bot.keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard
 
-from database.db_connector import update_user_citizenship, update_user_experience_details, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, add_user_info_to_db, update_user_age, update_user_description, update_user_name
+from database.db_connector import update_user_citizenship, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, add_user_info_to_db, update_user_age, update_user_description, update_user_name
 from database.db_connector import add_user_to_db_type_user, add_user_to_db_type_employer
 
 from config import TOKEN
+from cities import CITIES
 
 logging.basicConfig(level=logging.INFO)
 
@@ -43,7 +45,8 @@ class UserForm(StatesGroup):
     resume_start = State()
     skills = State()
     resume_edit = State()
-
+    experience_description = State()
+    
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()
 
@@ -119,7 +122,6 @@ async def process_user_type(callback_query: types.CallbackQuery, state: FSMConte
         await register_employer(callback_query.message, callback_query.from_user.id, callback_query.from_user.username, callback_query.from_user.username)
     await UserForm.next()
 
-
 @dp.message_handler(state=UserForm.age)
 async def process_age(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -132,14 +134,28 @@ async def process_age(message: types.Message, state: FSMContext):
     await message.answer("Какой ваш город?")
     await message.answer("Выберите город из списка:", reply_markup=await get_location_keyboard())
 
+async def normalize_city(city_name):
+    print(f"Searching for city: {city_name}")
+    for key, variants in CITIES.items():
+        if city_name.lower() in variants:
+            print(f"Found city: {key}")
+            return key
+    return None
+
+
 @dp.callback_query_handler(lambda query: query.data.startswith('location_'), state=UserForm.location)
 async def process_location(callback_query: types.CallbackQuery, state: FSMContext):
     location = callback_query.data.split('_')[1]  # Разбиваем и в базу записывается только spb / moscow / sochi
-    async with state.proxy() as data:
-        data['location'] = location
-    await update_user_location(callback_query.from_user.id, location)
-    await UserForm.nickname.set()
-    await callback_query.message.answer("Как к тебе обращаться? (Эта информация скрыта от остальных пользователей)", reply_markup=None)
+    normalized_location = await normalize_city(location)
+
+    if normalized_location:
+        async with state.proxy() as data:
+            data['location'] = normalized_location
+        await update_user_location(callback_query.from_user.id, normalized_location)
+        await UserForm.nickname.set()
+        await callback_query.message.answer("Как к тебе обращаться? (Эта информация скрыта от остальных пользователей)", reply_markup=None)
+    else:
+        await callback_query.message.answer("Указанный город не найден в списке доступных городов.", reply_markup=None)
 
 @dp.message_handler(state=UserForm.nickname)
 async def process_nickname(message: types.Message, state: FSMContext):
@@ -207,23 +223,49 @@ async def process_experience_no(message: types.Message, state: FSMContext):
 @dp.message_handler(state=UserForm.experience_details)
 async def process_experience_details(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['experience'].append(message.text)
+        data['experience'].append({
+            'company_name': message.text,
+            'description': None  # Добавьте дополнительный запрос для описания работы
+        })
+    await message.answer("Опишите вашу работу в данной компании.", reply_markup=None)
+    await UserForm.experience_description.set()
+
+# Дополнительный запрос для описания работы
+@dp.message_handler(state=UserForm.experience_description)
+async def process_experience_description(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        if 'experience' not in data or not data['experience']:
+            await message.answer("Произошла ошибка при обработке опыта работы. Пожалуйста, попробуйте снова.")
+            return
+        current_experience = data['experience'][-1]  # Получаем текущий опыт работы
+        current_experience['description'] = message.text  # Добавляем описание работы
+        data['experience'][-1] = current_experience  # Обновляем опыт работы в списке
+    
     await message.answer("Есть ли еще места работы, о которых вы хотите рассказать?", reply_markup=await get_yes_no_keyboard())
     await UserForm.experience_another.set()
+
+
 
 # Повторяющиеся вопросы, если есть другой опыт работы
 @dp.message_handler(lambda message: message.text.lower() == 'да', state=UserForm.experience_another)
 async def process_experience_another_yes(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['experience_details'] = []
+        # Создаем словарь для нового опыта работы
+        new_experience = {
+            'company_name': message.text,
+            'description': None
+        }
+        # Добавляем новый опыт работы в список всех опытов
+        data['experience'].append(new_experience)
     await UserForm.experience_details.set()
-    await message.answer("Как называлось ваше предыдущее место работы?", reply_markup=None)
+    await message.answer("Опишите вашу работу в данной компании.", reply_markup=None)
 
 @dp.message_handler(lambda message: message.text.lower() == 'нет', state=UserForm.experience_another)
 async def process_experience_another_no(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        data['experience'] = '\n'.join(data['experience'])
-    await update_user_experience_details(message.from_user.id, data['experience'])
+        # Преобразуем опыт работы в JSON и отправляем в базу данных
+        experience_json = json.dumps(data['experience'])
+    await update_user_experience(message.from_user.id, experience_json)
     await UserForm.skills.set()
     await message.answer("Какими навыками вы обладаете?", reply_markup=None)
     
@@ -234,6 +276,7 @@ async def process_skills(message: types.Message, state: FSMContext):
     await update_user_skills(message.from_user.id, data['skills'])
     await state.update_data(experience=data.get('experience'), skills=data.get('skills'))
     await UserForm.resume_check.set()
+    await message.answer("Сохраняем?", reply_markup=await get_save_restart_keyboard())
     await process_resume_check(message, state)
 
 # Проверка резюме и возможность перезаполнения
@@ -278,12 +321,28 @@ async def personal_cabinet(message: types.Message):
         description = user_data.get("description")
         location = user_data.get("location")
         status = "Ищу работу"
+        experience_json = user_data.get("experience")
         skills = user_data.get("skills")
-        user_info_text = f"ФИО: {fullname}\nВозраст: {age}\nОписание: {description}\nМестоположение: {location}\nНавыки: {skills}\nСтатус: {status}"
+
+        if isinstance(experience_json, str):
+            # Если данные в формате строки, преобразуйте их в список
+            experience_list = json.loads(experience_json)
+        else:
+            experience_list = experience_json
+
+        # Проверка на тип данных, чтобы убедиться, что experience_list является списком
+        if isinstance(experience_list, list):
+            # Форматирование опыта работы для вывода
+            experience_text = "\n".join([f"Место работы: {exp['company_name']}\nОписание: {exp['description']}" for exp in experience_list])
+        else:
+            experience_text = "Нет данных об опыте работы"
+
+        user_info_text = f"ФИО: {fullname}\nВозраст: {age}\nОписание: {description}\nМестоположение: {location}\nНавыки: {skills}\nСтатус: {status}\n\nОпыт работы:\n{experience_text}"
 
         await message.answer(f'Вот так будет видеть твою анкету работодатель:\n\n{user_info_text}', reply_markup=await get_resume_button())
     else:
         await message.answer("Информация о пользователе не найдена.", reply_markup=None)
+
 
 @dp.message_handler(lambda message: message.text == "Назад", state="*")
 async def back_to_main_menu(message: types.Message):

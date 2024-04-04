@@ -1,6 +1,7 @@
-import mysql.connector
+import mysql.connector # type: ignore
 import logging
 from config import DB_CONFIG
+import json
 
 logging.basicConfig(level=logging.INFO)
 
@@ -13,6 +14,8 @@ async def create_connection():
     except mysql.connector.Error as e:
         logging.error(f"Error connecting to MySQL: {e}")
         return None
+
+# ЗАПРОСЫ
 
 # ТОЛЬКО ДЛЯ ТИПА USER
 
@@ -212,6 +215,7 @@ async def update_user_skills(user_id, new_skills):
         finally:
             conn.close()
 
+
 async def send_resume(user_id, resume):
     conn = await create_connection()
     if conn:
@@ -220,7 +224,7 @@ async def send_resume(user_id, resume):
             cursor.execute("UPDATE users SET desired_position = %s, experience = %s, "
                            "experience_description = %s, additional_info = %s, skills = %s, "
                            "citizenship = %s, user_fullname = %s WHERE user_id = %s",
-                           (resume['desired_position'], resume['experience'], resume['experience_description'],
+                           (resume['desired_position'], json.dumps(resume['experience']), resume['experience_description'],
                             resume['additional_info'], resume['skills'], resume['citizenship'],
                             resume['user_fullname'], user_id))
             conn.commit()
@@ -231,6 +235,21 @@ async def send_resume(user_id, resume):
         finally:
             conn.close()
 
+
+async def update_user_experience(user_id, new_experience):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET experience = %s WHERE user_id = %s",
+                           (json.dumps(new_experience), user_id))
+            conn.commit()
+            logging.info(f"User with ID {user_id} updated with new experience: {new_experience}")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error updating user experience in database: {e}")
+        finally:
+            conn.close()
 async def update_user_fullname(user_id, new_fullname):
     conn = await create_connection()
     if conn:
@@ -260,39 +279,6 @@ async def update_user_desired_position(user_id, new_desired_position):
             logging.error(f"Error updating user desired position in database: {e}")
         finally:
             conn.close()
-
-async def update_user_experience(user_id, new_experience):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET experience = %s WHERE user_id = %s",
-                           (new_experience, user_id))
-            conn.commit()
-            logging.info(f"User with ID {user_id} updated with new experience: {new_experience}")
-            cursor.close()
-        except mysql.connector.Error as e:
-            logging.error(f"Error updating user experience in database: {e}")
-        finally:
-            conn.close()
-
-async def update_user_experience_details(user_id, new_experience_details):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET experience_details = %s WHERE user_id = %s",
-                           (new_experience_details, user_id))
-            conn.commit()
-            logging.info(f"User with ID {user_id} updated with new experience details: {new_experience_details}")
-            cursor.close()
-        except mysql.connector.Error as e:
-            logging.error(f"Error updating user experience details in database: {e}")
-        finally:
-            conn.close()
-
-
-
 
 # ТОЛЬКО ДЛЯ ТИПА EMPLOYER
 
