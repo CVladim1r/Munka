@@ -36,3 +36,4 @@ Traceback (most recent call last):
   File "C:\Users\Vladimir\AppData\Local\Programs\Python\Python310\lib\sit
 r: {e.__class__.__name__}: {e}")
 aiogram.utils.exceptions.NetworkError: Aiohttp client throws an error: ClientOSError: [WinError 64] Указанное сетевое имя более недоступно
+

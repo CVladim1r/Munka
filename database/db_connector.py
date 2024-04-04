@@ -246,7 +246,6 @@ async def update_user_fullname(user_id, new_fullname):
         finally:
             conn.close()
 
-
 async def update_user_desired_position(user_id, new_desired_position):
     conn = await create_connection()
     if conn:

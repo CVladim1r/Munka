@@ -4,16 +4,11 @@ JFBot/
 │
 ├── bot/
 │   ├── __init__.py
-│   ├── employer_registration_dialog.py
-│   ├── employer_registration.py
-│   ├── handlers.py
-│   ├── job_seeker_registration_dialog.py
+│   ├── keyboards.py
 │   └── user_registration.py
 │
 ├── models/
-│   ├── __init__.py
-│   ├── user.py
-│   └── vacancy.py
+│   └── __init__.py
 │
 ├── database/
 │   ├── __init__.py
@@ -32,7 +27,5 @@ JFBot/
 │
 ├── main.py
 ├── config.py
-├── architecture.txt
 ├── createDB.sql
-├── README.md
 └── requirements.txt

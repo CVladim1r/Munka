@@ -20,7 +20,7 @@ pip install -r requirements.txt
 
 2. Запустите бота, выполнив файл `main.py`:
 
-python main.py
+`python main.py`
 
 ## Использование
 
