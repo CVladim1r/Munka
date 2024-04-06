@@ -18,11 +18,7 @@ async def create_connection():
 
 
 
-
-
-
 # ЗАПРОСЫ
-
 
 # ТОЛЬКО ДЛЯ ТИПА USER
 
@@ -58,7 +54,6 @@ async def add_user_to_db_type_user(message, user_id, nickname, name, user_type):
             conn.close()
     else:
         logging.error("Failed to connect to the database")
-
 
 async def add_user_info_to_db(user_id, name, age, description):
     conn = await create_connection()

@@ -1,24 +1,27 @@
 import logging
 import asyncio
 import json
+from random import uniform
 
 from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import ParseMode
+from aiogram.dispatcher.filters import Text
 
 from bot.user_registration import register_job_seeker, register_employer
 from bot.keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard, get_send_or_dislike_resume_keyboard
+from bot.cities import CITIES
+from bot.format_data import format_vacancy
 
 from database.db_connector import update_user_citizenship, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, add_user_info_to_db, update_user_age, update_user_description, update_user_name
 from database.db_connector import add_user_to_db_type_user, add_user_to_db_type_employer
-
 from database.db_connector import get_random_vacancy_for_user
+
 from config import TOKEN
-from cities import CITIES
 
 logging.basicConfig(level=logging.INFO)
 
@@ -89,14 +92,14 @@ async def main_menu_user(user_id, message_id):
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
-    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons())
+    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
 
 async def main_menu_employer(user_id, message_id):
     main_text = "Искать вакансии:\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
-    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_employer_buttons())
+    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_employer_buttons(), disable_notification=True)
 
 @dp.callback_query_handler(lambda c: c.data in ["job_seeker", "employer"], state="*")
 async def process_user_type(callback_query: types.CallbackQuery, state: FSMContext):
@@ -115,7 +118,7 @@ async def process_user_type(callback_query: types.CallbackQuery, state: FSMConte
 
     if user_type == "job_seeker":
         await register_job_seeker(callback_query.message, callback_query.from_user.id, callback_query.from_user.username, callback_query.from_user.username)
-        await callback_query.message.answer("Давай создадим резюме. Напиши свой возраст:", reply_markup=None)
+        await callback_query.message.answer("Хорошо, давай теперь познакомимся. Напиши свой возраст:", reply_markup=None)
         await UserForm.regStart.set()
 
     elif user_type == "employer":
@@ -125,14 +128,18 @@ async def process_user_type(callback_query: types.CallbackQuery, state: FSMConte
 @dp.message_handler(state=UserForm.age)
 async def process_age(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
-        if not message.text.isdigit() or not (0 < int(message.text) < 99):
-            await message.answer("Неверный формат возраста. Пожалуйста, введите возраст цифрами. Пример: 18", reply_markup=None)
+        if int(message.text) >= 16:
+            if not message.text.isdigit() or not (0 < int(message.text) < 99):
+                await message.answer("Неверный формат возраста. Пожалуйста, введите возраст цифрами. Пример: 18", reply_markup=None)
+                return
+            data['age'] = message.text
+        else:
+            await message.answer("Извините, но для использования этого сервиса вам должно быть 16 лет или старше. Тем не менее, обратите внимание, что многие работодатели предпочитают нанимать людей старше 16 лет из-за их более широкого опыта и профессионализма.", reply_markup=None)
             return
-        data['age'] = message.text
     await update_user_age(message.from_user.id, data['age'])
     await UserForm.location.set()
-    await message.answer("Какой ваш город?")
-    await message.answer("Выберите город из списка:", reply_markup=await get_location_keyboard())
+    await message.answer("Из какого ты города?")
+    await message.answer("Выбери из списка или напиши свой вариант:", reply_markup=await get_location_keyboard())
 
 async def normalize_city(city_name):
     print(f"Searching for city: {city_name}")
@@ -161,9 +168,16 @@ async def process_nickname(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['nickname'] = message.text
     await update_user_name(message.from_user.id, data['nickname'])
-    await UserForm.description.set()
-    await message.answer("Напиши краткое описание о себе.", reply_markup=None)
+    #await UserForm.description.set()
+    #await message.answer("Напиши краткое описание о себе.", reply_markup=None)
 
+    await message.answer("Отлично! Давай теперь заполним твое резюме.", reply_markup=None)
+    await asyncio.sleep(1)
+    await message.answer("Напиши ФИО. (Пример: Константин Гурий Павлович)")
+    await UserForm.resume_start.set()
+    await UserForm.fullname.set()
+
+'''
 @dp.message_handler(state=UserForm.description)
 async def process_description(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -174,13 +188,14 @@ async def process_description(message: types.Message, state: FSMContext):
     await message.answer("Напиши ФИО. (Пример: Константин Гурий Павлович)")
     await UserForm.resume_start.set()
     await UserForm.fullname.set()
+'''
 
 @dp.message_handler(state=UserForm.fullname)
 async def resume_start(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['fullname'] = message.text
     await update_user_fullname(message.from_user.id, data['fullname'])
-    await message.answer("Какое у тебя гражданство?", reply_markup=await get_citizenship_keyboard())
+    await message.answer("Откуда ты? (Напиши текстом если среди вариантов ниже нет твоего)", reply_markup=await get_citizenship_keyboard())
     await UserForm.citizenship.set()
 
 # Шаг 3: Ответ на вопрос о национальности
@@ -189,7 +204,7 @@ async def citizenship(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['citizenship'] = message.text
     await update_user_citizenship(message.from_user.id, data['citizenship'])
-    await message.answer("Кем бы вы хотели работать?", reply_markup=await get_position_keyboard())
+    await message.answer("Кем бы вы хотели работать? (Напиши текстом если среди вариантов ниже нет твоего)", reply_markup=await get_position_keyboard())
     await UserForm.desired_position.set()
 
 # Шаг 6: Выбор желаемой позиции
@@ -216,7 +231,7 @@ async def process_experience_no(message: types.Message, state: FSMContext):
         data['experience'] = "Нет опыта работы"
     await update_user_experience(message.from_user.id, data['experience'])
     await UserForm.skills.set()
-    await message.answer("Какими навыками вы обладаете?", reply_markup=None)
+    await message.answer("Какими навыками вы обладаете?", reply_markup=types.ReplyKeyboardRemove())
 
 # Продолжение для описания опыта работы
 @dp.message_handler(state=UserForm.experience_details)
@@ -226,7 +241,7 @@ async def process_experience_details(message: types.Message, state: FSMContext):
             'company_name': message.text,
             'description': None  # Добавьте дополнительный запрос для описания работы
         })
-    await message.answer("Опишите вашу работу в данной компании.", reply_markup=None)
+    await message.answer("Опишите вашу работу в данной компании.", reply_markup=types.ReplyKeyboardRemove())  # Убрать клавиатуру
     await UserForm.experience_description.set()
 
 # Дополнительный запрос для описания работы
@@ -255,7 +270,7 @@ async def process_experience_another_yes(message: types.Message, state: FSMConte
         # Добавляем новый опыт работы в список всех опытов
         data['experience'].append(new_experience)
     await UserForm.experience_details.set()
-    await message.answer("Опишите вашу работу в данной компании.", reply_markup=None)
+    await message.answer("Опишите вашу работу в данной компании.", reply_markup=types.ReplyKeyboardRemove())
 
 @dp.message_handler(lambda message: message.text.lower() == 'нет', state=UserForm.experience_another)
 async def process_experience_another_no(message: types.Message, state: FSMContext):
@@ -264,7 +279,7 @@ async def process_experience_another_no(message: types.Message, state: FSMContex
         experience_json = json.dumps(data['experience'])
     await update_user_experience(message.from_user.id, experience_json)
     await UserForm.skills.set()
-    await message.answer("Какими навыками вы обладаете?", reply_markup=None)
+    await message.answer("Какими навыками вы обладаете?", reply_markup=types.ReplyKeyboardRemove())
     
 @dp.message_handler(state=UserForm.skills)
 async def process_skills(message: types.Message, state: FSMContext):
@@ -305,73 +320,61 @@ async def process_resume_confirmation(message: types.Message, state: FSMContext)
             await resume_start(message=message, state=state)
     await state.finish()
 
-
-
-async def format_vacancy(vacancy):
-    formatted_vacancy = f"<b>{vacancy['vacancy_title']}</b>\n\n"
-    formatted_vacancy += f"<b>Компания:</b> {vacancy['company_name']}\n"
-    formatted_vacancy += f"<b>Дата создания:</b> {vacancy['created_date']}\n"
-    formatted_vacancy += f"<b>Тип занятости:</b> {vacancy['employment']}\n"
-    formatted_vacancy += f"<b>Требуемый опыт работы:</b> {vacancy['experience']}\n"
-    
-    # Проверяем наличие информации о зарплате
-    if 'salary_info' in vacancy and vacancy['salary_info']:
-        formatted_vacancy += f"<b>Зарплата:</b> {vacancy['salary_info']}\n\n"
-    else:
-        formatted_vacancy += "<b>Зарплата:</b> Обсуждается лично\n\n"
-    
-    # Отдельно форматируем описание, чтобы избежать слипания
-    description = vacancy['description'].strip()
-    formatted_vacancy += f"<b>Описание:</b>\n"
-    formatted_vacancy += f"{description}\n\n"
-
-    formatted_vacancy += f"<b>Ключевые навыки:</b> {vacancy['skills']}\n"
-    formatted_vacancy += f"<b>Сылка на версию hh:</b>\n"
-    formatted_vacancy += f"<a href='{vacancy['vacancy_url']}'>Ссылка на вакансию</a>"
-    return formatted_vacancy
-
-
-
-
-@dp.message_handler(lambda message: message.text == "🔍 Искать Вакансии")
+@dp.message_handler(lambda message: message.text == "/search" or message.text == "🔍 Искать Вакансии")
 async def search_vacancies(message: types.Message):
     user_id = message.from_user.id
-    random_vacancy = await get_random_vacancy_for_user(user_id)
-    
-    if random_vacancy:
-        formatted_vacancy = await format_vacancy(random_vacancy)
-        await message.answer(
-            formatted_vacancy, 
-            parse_mode="HTML",
-            reply_markup=await get_send_or_dislike_resume_keyboard()
-        )
+    user_data = await get_user_data(user_id)
+
+    if user_data:
+        random_vacancy = await get_random_vacancy_for_user(user_id)
+
+        if random_vacancy:
+            formatted_vacancy = await format_vacancy(random_vacancy)
+            await message.answer(
+                formatted_vacancy,
+                parse_mode="HTML",
+                reply_markup=await get_send_or_dislike_resume_keyboard()
+            )
+        else:
+            await message.answer(
+                "К сожалению, не удалось найти вакансии. Попробуйте еще раз позже.",
+                reply_markup=None
+            )
     else:
         await message.answer(
-            "К сожалению, не удалось найти вакансии. Попробуйте еще раз позже.", 
-            reply_markup=None
-        )
+                "Похоже что ты не зарегистрирован в системе. Самое время пройти регистраицю! /start",
+                reply_markup=None
+            )
 
 @dp.message_handler(lambda message: message.text == "👎", state="*")
 async def dislike_resume(message: types.Message):
     user_id = message.from_user.id
-    random_vacancy = await get_random_vacancy_for_user(user_id)
+    user_data = await get_user_data(user_id)
 
-    if random_vacancy:
-        formatted_vacancy = await format_vacancy(random_vacancy)
-        await message.answer(
-            formatted_vacancy, 
-            parse_mode="HTML",
-            reply_markup=await get_send_or_dislike_resume_keyboard()
-        )
-    else:
-        await message.answer(
-            "К сожалению, не удалось найти вакансии. Попробуйте еще раз позже.", 
-            reply_markup=None
-        )
+    if user_data:
+        random_vacancy = await get_random_vacancy_for_user(user_id)
+
+        if random_vacancy:
+            formatted_vacancy = await format_vacancy(random_vacancy)
+            await message.answer(
+                formatted_vacancy,
+                parse_mode="HTML",
+                reply_markup=await get_send_or_dislike_resume_keyboard()
+            )
+        else:
+            await message.answer(
+                "К сожалению, не удалось найти вакансии. Попробуйте еще раз позже.",
+                reply_markup=None
+            )
 
 @dp.message_handler(lambda message: message.text == '✉', state="*")
 async def send_resume(message: types.Message):
-    await message.answer("Резюме отправлено!\n\nТеперь можно перейти к просмотру анкет дальше!")
+    user_id = message.from_user.id
+    user_data = await get_user_data(user_id)
+
+    if user_data:
+        await message.answer("Резюме отправлено!\n\nТеперь можно перейти к просмотру анкет дальше!")
+        await search_vacancies(message)
 
 @dp.message_handler(lambda message: message.text == "😴", state="*")
 async def personal_sleep(message: types.Message):
@@ -426,12 +429,7 @@ async def about_bot(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "✏️ Редактировать резюме", state="*")
 async def about_bot(message: types.Message):
-    about_text = "Ну и нахуя? и так все норм..."
-
-    await message.answer(about_text)
     await message.answer("Желаете что-нибудь подправить или начать заново?", reply_markup=await get_save_restart_keyboard())
-
-
 
 # Команды доступные для любого типа пользователя
 @dp.message_handler(commands=['help'], state="*")
@@ -448,8 +446,15 @@ async def help_command(message: types.Message):
 
 @dp.message_handler(commands=['about'], state="*")
 async def help_command(message: types.Message):
-    await main_menu_user(message.from_user.id, message.message_id)
-    await message.answer('help_text', reply_markup=None)
+    user_id = message.from_user.id
+    user_data = await get_user_data(user_id)
+
+    if user_data:
+        await main_menu_user(message.from_user.id, message.message_id)
+        await message.answer('help_text', reply_markup=None)
+    else:
+        await message.answer('SuckMyDickBROOO', reply_markup=None)
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
