@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS `employers` (
   `requirements` text,
   `working_conditions` text,
   `image_path` varchar(255),
+  `desired_position` varchar(255),
   PRIMARY KEY (`employer_id`),
   UNIQUE KEY `employer_username` (`employer_username`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1202021369 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
