@@ -16,33 +16,49 @@ async def create_connection():
         logging.error(f"Error connecting to MySQL: {e}")
         return None
 
+
+
+
+
+
 # ЗАПРОСЫ
+
 
 # ТОЛЬКО ДЛЯ ТИПА USER
 
-async def add_user_to_db_type_user(message, user_id, user, user_name, user_type):
+async def add_user_to_db_type_user(message, user_id, nickname, name, user_type):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
             if message.from_user.username:
-                # Проверяем, существует ли уже nickname для данного пользователя
+                logging.info(f"User's username: {message.from_user.username}")
                 cursor.execute("SELECT nickname FROM users WHERE user_id = %s", (user_id,))
                 result = cursor.fetchone()
                 if result and result[0]:
-                    user_name = result[0]
+                    name = result[0]
                 else:
-                    user_name = f"@{message.from_user.username}"
-            cursor.execute("INSERT INTO users (user_id, name, nickname, user_type) VALUES (%s, %s, %s, %s) "
-                           "ON DUPLICATE KEY UPDATE name=VALUES(name), user_type=VALUES(user_type), nickname=IF(VALUES(nickname) <> '', VALUES(nickname), nickname)",
-                           (user_id, user, user_name, user_type))
+                    nickname = f"@{message.from_user.username}"
+                    logging.info(f"Using username as nickname: {nickname}")
+            else:
+                logging.info("User's username not available")
+
+            cursor.execute("INSERT INTO users (user_id, name, nickname, user_type) "
+                           "VALUES (%s, %s, %s, %s) "
+                           "ON DUPLICATE KEY UPDATE "
+                           "name=VALUES(name), user_type=VALUES(user_type), "
+                           "nickname=IF(VALUES(nickname) <> '', VALUES(nickname), nickname)",
+                           (user_id, name, nickname, user_type))
             conn.commit()
-            logging.info(f"User with ID {user_id} added to the database")
-            cursor.close()
+            logging.info(f"User with ID {user_id} added/updated in the database")
         except mysql.connector.Error as e:
-            logging.error(f"Error adding user to database: {e}")
+            logging.error(f"Error adding/updating user to the database: {e}")
         finally:
+            cursor.close()
             conn.close()
+    else:
+        logging.error("Failed to connect to the database")
+
 
 async def add_user_info_to_db(user_id, name, age, description):
     conn = await create_connection()
@@ -93,6 +109,9 @@ async def get_user_data(user_id):
         finally:
             conn.close()
     return None
+
+
+
 
 # ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
 
@@ -249,18 +268,19 @@ async def update_user_experience(user_id, new_experience):
             logging.error(f"Error updating user experience in database: {e}")
         finally:
             conn.close()
+
 async def update_user_fullname(user_id, new_fullname):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET fullname = %s WHERE user_id = %s",
+            cursor.execute("UPDATE users SET user_fullname = %s WHERE user_id = %s",
                            (new_fullname, user_id))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new fullname: {new_fullname}")
+            logging.info(f"User with ID {user_id} updated with new user_fullname: {new_fullname}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user fullname in database: {e}")
+            logging.error(f"Error updating user user_fullname in database: {e}")
         finally:
             conn.close()
 
@@ -278,6 +298,11 @@ async def update_user_desired_position(user_id, new_desired_position):
             logging.error(f"Error updating user desired position in database: {e}")
         finally:
             conn.close()
+
+
+
+
+
 
 # ТОЛЬКО ДЛЯ ТИПА EMPLOYER
 

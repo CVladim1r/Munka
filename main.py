@@ -114,13 +114,11 @@ async def process_user_type(callback_query: types.CallbackQuery, state: FSMConte
     await state.update_data(user_type=user_type)
 
     if user_type == "job_seeker":
-        await add_user_to_db_type_user(callback_query.message, user_id, user, user_name, None)
         await register_job_seeker(callback_query.message, callback_query.from_user.id, callback_query.from_user.username, callback_query.from_user.username)
         await callback_query.message.answer("Давай создадим резюме. Напиши свой возраст:", reply_markup=None)
         await UserForm.regStart.set()
 
     elif user_type == "employer":
-        await add_user_to_db_type_employer(callback_query.message, employer_id, employer_username, user, None)
         await register_employer(callback_query.message, callback_query.from_user.id, callback_query.from_user.username, callback_query.from_user.username)
     await UserForm.next()
 
