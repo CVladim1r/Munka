@@ -1,6 +1,15 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+async def get_send_or_dislike_resume_keyboard():
+    keyboard = ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
+    keyboard.add(
+        KeyboardButton("👎"),
+        KeyboardButton("✉"),
+        KeyboardButton("😴")
+    )
+    return keyboard
+
 async def get_position_keyboard():
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(KeyboardButton("Повар"))
@@ -13,7 +22,6 @@ async def get_citizenship_keyboard():
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True, row_width=5)
     keyboard.add(KeyboardButton("РФ"))
     keyboard.add(KeyboardButton("Казахстан"))
-    keyboard.add(KeyboardButton("США"))
     keyboard.add(KeyboardButton("Беларусь"))
     keyboard.add(KeyboardButton("Грузия"))
     return keyboard
@@ -54,7 +62,7 @@ async def get_choose_menu_employer_buttons():
 async def get_location_keyboard():
     keyboard = InlineKeyboardMarkup()
     keyboard.row(
-        InlineKeyboardButton("Санкт-Петербург", callback_data="location_spb"),
+        InlineKeyboardButton("Питер", callback_data="location_spb"),
         InlineKeyboardButton("Москва", callback_data="location_moscow"),
         InlineKeyboardButton("Сочи", callback_data="location_sochi")
     )
@@ -64,6 +72,6 @@ async def get_resume_button():
     keyboard = ReplyKeyboardMarkup(resize_keyboard=True)
     keyboard.add(KeyboardButton("Заполнить анкету заново"))
     keyboard.add(KeyboardButton("Изменить описание"))
-    keyboard.add(KeyboardButton("Смотреть вакансии"))
-    keyboard.add(KeyboardButton("Назад"))
+    keyboard.add(KeyboardButton("🔍 Искать Вакансии"))
+    keyboard.add(KeyboardButton("↩️ Назад"))
     return keyboard

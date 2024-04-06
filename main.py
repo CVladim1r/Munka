@@ -9,14 +9,14 @@ from aiogram.utils import executor
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 
 from bot.user_registration import register_job_seeker, register_employer
-from bot.keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard
+from bot.keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard, get_send_or_dislike_resume_keyboard
 
 from database.db_connector import update_user_citizenship, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, add_user_info_to_db, update_user_age, update_user_description, update_user_name
 from database.db_connector import add_user_to_db_type_user, add_user_to_db_type_employer
 
+from database.db_connector import get_random_vacancy_for_user
 from config import TOKEN
 from cities import CITIES
 
@@ -46,7 +46,9 @@ class UserForm(StatesGroup):
     skills = State()
     resume_edit = State()
     experience_description = State()
-    
+    search_vacancies = State()
+    dislike_resume = State()
+
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()
 
@@ -83,7 +85,7 @@ async def start(message: types.Message, state: FSMContext):
     await UserForm.next()
 
 async def main_menu_user(user_id, message_id):
-    main_text = "Искать вакансии:\n"
+    main_text = "Искать вакансии\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
@@ -141,7 +143,6 @@ async def normalize_city(city_name):
             print(f"Found city: {key}")
             return key
     return None
-
 
 @dp.callback_query_handler(lambda query: query.data.startswith('location_'), state=UserForm.location)
 async def process_location(callback_query: types.CallbackQuery, state: FSMContext):
@@ -244,8 +245,6 @@ async def process_experience_description(message: types.Message, state: FSMConte
     await message.answer("Есть ли еще места работы, о которых вы хотите рассказать?", reply_markup=await get_yes_no_keyboard())
     await UserForm.experience_another.set()
 
-
-
 # Повторяющиеся вопросы, если есть другой опыт работы
 @dp.message_handler(lambda message: message.text.lower() == 'да', state=UserForm.experience_another)
 async def process_experience_another_yes(message: types.Message, state: FSMContext):
@@ -276,7 +275,6 @@ async def process_skills(message: types.Message, state: FSMContext):
     await update_user_skills(message.from_user.id, data['skills'])
     await state.update_data(experience=data.get('experience'), skills=data.get('skills'))
     await UserForm.resume_check.set()
-    await message.answer("Сохраняем?", reply_markup=await get_save_restart_keyboard())
     await process_resume_check(message, state)
 
 # Проверка резюме и возможность перезаполнения
@@ -309,6 +307,78 @@ async def process_resume_confirmation(message: types.Message, state: FSMContext)
             await resume_start(message=message, state=state)
     await state.finish()
 
+
+
+async def format_vacancy(vacancy):
+    formatted_vacancy = f"<b>{vacancy['vacancy_title']}</b>\n\n"
+    formatted_vacancy += f"<b>Компания:</b> {vacancy['company_name']}\n"
+    formatted_vacancy += f"<b>Дата создания:</b> {vacancy['created_date']}\n"
+    formatted_vacancy += f"<b>Тип занятости:</b> {vacancy['employment']}\n"
+    formatted_vacancy += f"<b>Требуемый опыт работы:</b> {vacancy['experience']}\n"
+    
+    # Проверяем наличие информации о зарплате
+    if 'salary_info' in vacancy and vacancy['salary_info']:
+        formatted_vacancy += f"<b>Зарплата:</b> {vacancy['salary_info']}\n\n"
+    else:
+        formatted_vacancy += "<b>Зарплата:</b> Обсуждается лично\n\n"
+    
+    # Отдельно форматируем описание, чтобы избежать слипания
+    description = vacancy['description'].strip()
+    formatted_vacancy += f"<b>Описание:</b>\n"
+    formatted_vacancy += f"{description}\n\n"
+
+    formatted_vacancy += f"<b>Ключевые навыки:</b> {vacancy['skills']}\n"
+    formatted_vacancy += f"<b>Сылка на версию hh:</b>\n"
+    formatted_vacancy += f"<a href='{vacancy['vacancy_url']}'>Ссылка на вакансию</a>"
+    return formatted_vacancy
+
+
+
+
+@dp.message_handler(lambda message: message.text == "🔍 Искать Вакансии")
+async def search_vacancies(message: types.Message):
+    user_id = message.from_user.id
+    random_vacancy = await get_random_vacancy_for_user(user_id)
+    
+    if random_vacancy:
+        formatted_vacancy = await format_vacancy(random_vacancy)
+        await message.answer(
+            formatted_vacancy, 
+            parse_mode="HTML",
+            reply_markup=await get_send_or_dislike_resume_keyboard()
+        )
+    else:
+        await message.answer(
+            "К сожалению, не удалось найти вакансии. Попробуйте еще раз позже.", 
+            reply_markup=None
+        )
+
+@dp.message_handler(lambda message: message.text == "👎", state="*")
+async def dislike_resume(message: types.Message):
+    user_id = message.from_user.id
+    random_vacancy = await get_random_vacancy_for_user(user_id)
+
+    if random_vacancy:
+        formatted_vacancy = await format_vacancy(random_vacancy)
+        await message.answer(
+            formatted_vacancy, 
+            parse_mode="HTML",
+            reply_markup=await get_send_or_dislike_resume_keyboard()
+        )
+    else:
+        await message.answer(
+            "К сожалению, не удалось найти вакансии. Попробуйте еще раз позже.", 
+            reply_markup=None
+        )
+
+@dp.message_handler(lambda message: message.text == '✉', state="*")
+async def send_resume(message: types.Message):
+    await message.answer("Резюме отправлено!\n\nТеперь можно перейти к просмотру анкет дальше!")
+
+@dp.message_handler(lambda message: message.text == "😴", state="*")
+async def personal_sleep(message: types.Message):
+    await message.answer("Отлично! Самое время сделать перерв 😁", reply_markup=await get_choose_menu_user_buttons())
+
 @dp.message_handler(lambda message: message.text == "👤 Личный кабинет", state="*")
 async def personal_cabinet(message: types.Message):
     user_id = message.from_user.id
@@ -325,12 +395,10 @@ async def personal_cabinet(message: types.Message):
         skills = user_data.get("skills")
 
         if isinstance(experience_json, str):
-            # Если данные в формате строки, преобразуйте их в список
             experience_list = json.loads(experience_json)
         else:
             experience_list = experience_json
 
-        # Проверка на тип данных, чтобы убедиться, что experience_list является списком
         if isinstance(experience_list, list):
             # Форматирование опыта работы для вывода
             experience_text = "\n".join([f"Место работы: {exp['company_name']}\nОписание: {exp['description']}" for exp in experience_list])
@@ -343,8 +411,7 @@ async def personal_cabinet(message: types.Message):
     else:
         await message.answer("Информация о пользователе не найдена.", reply_markup=None)
 
-
-@dp.message_handler(lambda message: message.text == "Назад", state="*")
+@dp.message_handler(lambda message: message.text == "↩️ Назад", state="*")
 async def back_to_main_menu(message: types.Message):
     user_id = message.from_user.id
     user_data = await get_user_data(user_id)
@@ -359,6 +426,15 @@ async def about_bot(message: types.Message):
     about_text = "Данный бот был создан для помощи компаниям в сфере общепита быстрее найти работников."
     await message.answer(about_text)
 
+@dp.message_handler(lambda message: message.text == "✏️ Редактировать резюме", state="*")
+async def about_bot(message: types.Message):
+    about_text = "Ну и нахуя? и так все норм..."
+
+    await message.answer(about_text)
+    await message.answer("Желаете что-нибудь подправить или начать заново?", reply_markup=await get_save_restart_keyboard())
+
+
+
 # Команды доступные для любого типа пользователя
 @dp.message_handler(commands=['help'], state="*")
 async def help_command(message: types.Message):
@@ -371,6 +447,11 @@ async def help_command(message: types.Message):
     help_text += "О боте - Информация о боте\n"
 
     await message.answer(help_text, reply_markup=None)
+
+@dp.message_handler(commands=['about'], state="*")
+async def help_command(message: types.Message):
+    await main_menu_user(message.from_user.id, message.message_id)
+    await message.answer('help_text', reply_markup=None)
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)

@@ -74,3 +74,38 @@ AFTER INSERT ON vacancies
 FOR EACH ROW
     INSERT INTO vacancy_applicants (vacancy_id)
     VALUES (NEW.vacancy_id);
+
+--DELIMITER //
+--CREATE TRIGGER trg_after_insert_vacancies
+--AFTER INSERT ON vacancies
+--FOR EACH ROW
+--BEGIN
+--    INSERT INTO vacancy_applicants (vacancy_id)
+--    VALUES (NEW.vacancy_id);
+--END;
+--//
+--DELIMITER ;
+
+CREATE TABLE IF NOT EXISTS viewed_vacancies (
+    user_id INT NOT NULL,
+    vacancy_id INT NOT NULL,
+    PRIMARY KEY (user_id, vacancy_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (vacancy_id) REFERENCES vacancies(vacancy_id) ON DELETE CASCADE
+);
+
+-- Триггер для обновления viewed_vacancies при изменении данных в таблице users
+DELIMITER //
+CREATE TRIGGER trg_update_viewed_vacancies_users
+AFTER INSERT, DELETE, UPDATE ON users
+FOR EACH ROW
+BEGIN
+    -- Если добавлен или удален пользователь, обновляем viewed_vacancies для всех пользователей
+    DELETE FROM viewed_vacancies;
+    -- Добавление новых записей в viewed_vacancies для всех пользователей
+    INSERT INTO viewed_vacancies (user_id, vacancy_id)
+    SELECT user_id, vacancy_id
+    FROM vacancies;
+END;
+//
+DELIMITER ;
