@@ -215,7 +215,6 @@ async def update_user_skills(user_id, new_skills):
         finally:
             conn.close()
 
-
 async def send_resume(user_id, resume):
     conn = await create_connection()
     if conn:
@@ -234,7 +233,6 @@ async def send_resume(user_id, resume):
             logging.error(f"Error sending resume for user in database: {e}")
         finally:
             conn.close()
-
 
 async def update_user_experience(user_id, new_experience):
     conn = await create_connection()
