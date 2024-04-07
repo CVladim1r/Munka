@@ -1,5 +1,4 @@
-from aiogram.fsm.state import StatesGroup, State
-
+from aiogram.dispatcher.filters.state import State, StatesGroup
 class UserForm(StatesGroup):
     nickname = State()
     regStart = State()

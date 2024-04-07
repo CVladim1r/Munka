@@ -16,7 +16,7 @@ async def format_vacancy(vacancy):
     formatted_vacancy += f"<b>Описание:</b>\n"
     formatted_vacancy += f"{description}\n\n"
 
-    formatted_vacancy += f"<b>Ключевые навыки:</b> {vacancy['skills']}\n"
-    formatted_vacancy += f"<b>Сылка на версию hh:</b>\n"
+    #formatted_vacancy += f"<b>Ключевые навыки:</b> {vacancy['skills']}\n"
+    #formatted_vacancy += f"<b>Сылка на версию hh:</b>\n"
     formatted_vacancy += f"<a href='{vacancy['vacancy_url']}'>Ссылка на вакансию</a>"
     return formatted_vacancy

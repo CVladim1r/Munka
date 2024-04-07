@@ -1,3 +1,13 @@
+
+# Log files
+bot.log
+
+# Other
+bugs.txt
+config.py
+
+bugs.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.pyc
@@ -19,12 +29,3 @@ bot/__pycache__/
 *.pyc
 *.pyo
 *.pyd
-
-# Log files
-bot.log
-
-# Other
-bugs.txt
-config.py
-
-bugs.txt

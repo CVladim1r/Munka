@@ -3,19 +3,30 @@ import asyncio
 import json
 from random import uniform
 
-from aiogram import Bot, Dispatcher, types, Router
+from aiogram import Bot, Dispatcher, types
+import logging
+import asyncio
+import json
+from random import uniform
 
-from aiogram.dispatcher.middlewares.base import BaseMiddleware
+from aiogram import Bot, Dispatcher, types
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+from aiogram.utils import executor
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.types import ParseMode
+from aiogram.dispatcher.filters import Text
 
 from aiogram.utils import executor
 from aiogram.dispatcher import FSMContext
 from utils.states import *
-from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import ParseMode
 
 from bot.user_registration import register_job_seeker, register_employer
 from bot.keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard, get_send_or_dislike_resume_keyboard
-from bot.cities import CITIES
+from bot.cities import city_list
 # from keyboards.reply import *
 from bot.format_data import format_vacancy
 
@@ -30,9 +41,7 @@ logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=storage)
-dp.middleware.setup(BaseMiddleware())
-
-
+dp.middleware.setup(LoggingMiddleware())
 
 @dp.message_handler(commands=['start'], state="*")
 async def start(message: types.Message, state: FSMContext):
@@ -122,11 +131,12 @@ async def process_age(message: types.Message, state: FSMContext):
 
 async def normalize_city(city_name):
     print(f"Searching for city: {city_name}")
-    for key, variants in CITIES.items():
+    for key, variants in city_list.items():
         if city_name.lower() in variants:
             print(f"Found city: {key}")
             return key
-    return None
+    print("City not found in the list of available cities.")
+
 
 @dp.callback_query_handler(lambda query: query.data.startswith('location_'), state=UserForm.location)
 async def process_location(callback_query: types.CallbackQuery, state: FSMContext):
@@ -433,7 +443,6 @@ async def help_command(message: types.Message):
         await message.answer('help_text', reply_markup=None)
     else:
         await message.answer('SuckMyDickBROOO', reply_markup=None)
-
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
