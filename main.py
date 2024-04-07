@@ -3,18 +3,20 @@ import asyncio
 import json
 from random import uniform
 
-from aiogram import Bot, Dispatcher, types
-from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram import Bot, Dispatcher, types, Router
+
+from aiogram.dispatcher.middlewares.base import BaseMiddleware
+
 from aiogram.utils import executor
 from aiogram.dispatcher import FSMContext
-from aiogram.dispatcher.filters.state import State, StatesGroup
-from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from utils.states import *
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import ParseMode
-from aiogram.dispatcher.filters import Text
 
 from bot.user_registration import register_job_seeker, register_employer
 from bot.keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard, get_send_or_dislike_resume_keyboard
 from bot.cities import CITIES
+# from keyboards.reply import *
 from bot.format_data import format_vacancy
 
 from database.db_connector import update_user_citizenship, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, add_user_info_to_db, update_user_age, update_user_description, update_user_name
@@ -28,32 +30,9 @@ logging.basicConfig(level=logging.INFO)
 storage = MemoryStorage()
 bot = Bot(token=TOKEN)
 dp = Dispatcher(bot, storage=storage)
-dp.middleware.setup(LoggingMiddleware())
+dp.middleware.setup(BaseMiddleware())
 
-class UserForm(StatesGroup):
-    nickname = State()
-    regStart = State()
-    age = State()
-    description = State()
-    company_name = State()
-    location = State()
-    fullname = State() 
-    citizenship = State()
-    desired_position = State()
-    work_experience = State()
-    experience_details = State()
-    experience_another = State()
-    resume_check = State()
-    resume_confirmation = State()
-    resume_start = State()
-    skills = State()
-    resume_edit = State()
-    experience_description = State()
-    search_vacancies = State()
-    dislike_resume = State()
 
-class CommandState(StatesGroup):
-    COMMAND_PROCESSING = State()
 
 @dp.message_handler(commands=['start'], state="*")
 async def start(message: types.Message, state: FSMContext):
