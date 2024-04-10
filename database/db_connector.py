@@ -2,7 +2,6 @@ import mysql.connector # type: ignore
 import logging
 from config import DB_CONFIG
 import json
-import random
 
 logging.basicConfig(level=logging.INFO)
 
@@ -16,37 +15,30 @@ async def create_connection():
         logging.error(f"Error connecting to MySQL: {e}")
         return None
 
-
-
 # ЗАПРОСЫ
-
 # ТОЛЬКО ДЛЯ ТИПА USER
-
-async def add_user_to_db_type_user(message, user_id, nickname, name, user_type):
+async def add_user_to_db_type_user(user_tgid, user_tgname, user_fullname, user_type):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            if message.from_user.username:
-                logging.info(f"User's username: {message.from_user.username}")
-                cursor.execute("SELECT nickname FROM users WHERE user_id = %s", (user_id,))
-                result = cursor.fetchone()
-                if result and result[0]:
-                    name = result[0]
-                else:
-                    nickname = f"@{message.from_user.username}"
-                    logging.info(f"Using username as nickname: {nickname}")
+            cursor.execute("SELECT user_tgname FROM users WHERE user_tgid = %s", (user_tgid,))
+            result = cursor.fetchone()
+            if result and result[0]:
+                user_tgname = result[0]
             else:
-                logging.info("User's username not available")
+                logging.info(f"Using username as user_tgname: {user_tgname}")
+            if not user_tgname.startswith('@'):
+                user_tgname = '@' + user_tgname
 
-            cursor.execute("INSERT INTO users (user_id, name, nickname, user_type) "
+            cursor.execute("INSERT INTO users (user_tgid, user_fullname, user_tgname, user_type) "
                            "VALUES (%s, %s, %s, %s) "
                            "ON DUPLICATE KEY UPDATE "
-                           "name=VALUES(name), user_type=VALUES(user_type), "
-                           "nickname=IF(VALUES(nickname) <> '', VALUES(nickname), nickname)",
-                           (user_id, name, nickname, user_type))
+                           "user_fullname=VALUES(user_fullname), user_type=VALUES(user_type), "
+                           "user_tgname=IF(VALUES(user_tgname) <> '', VALUES(user_tgname), user_tgname)",
+                           (user_tgid, user_fullname, user_tgname, user_type))
             conn.commit()
-            logging.info(f"User with ID {user_id} added/updated in the database")
+            logging.info(f"User with ID {user_tgid} added/updated in the database")
         except mysql.connector.Error as e:
             logging.error(f"Error adding/updating user to the database: {e}")
         finally:
@@ -55,29 +47,32 @@ async def add_user_to_db_type_user(message, user_id, nickname, name, user_type):
     else:
         logging.error("Failed to connect to the database")
 
-async def add_user_info_to_db(user_id, name, age, description):
+
+async def add_user_info_to_db(user_tgid, user_fullname, user_age, user_description):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (user_id, name, age, description) VALUES (%s, %s, %s, %s) "
-                        "ON DUPLICATE KEY UPDATE name=VALUES(name), age=VALUES(age), description=VALUES(description)",
-                        (user_id, name, age, description))
+            cursor.execute("INSERT INTO users (user_tgid, user_fullname, user_age, user_description) "
+                            "VALUES (%s, %s, %s, %s) "
+                            "ON DUPLICATE KEY UPDATE user_fullname=VALUES(user_fullname), "
+                            "user_age=VALUES(user_age), user_description=VALUES(user_description)",
+                            (user_tgid, user_fullname, user_age, user_description))
 
             conn.commit()
-            logging.info(f"User info added to the database for user with ID {user_id}")
+            logging.info(f"User info added to the database for user with ID {user_tgid}")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error adding user info to database: {e}")
         finally:
             conn.close()
 
-async def user_exists_in_db(user_id):
+async def user_exists_in_db(user_tgid):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM users WHERE user_id = %s", (user_id,))
+            cursor.execute("SELECT COUNT(*) FROM users WHERE user_tgid = %s", (user_tgid,))
             result = cursor.fetchone()
             cursor.close()
             if result and result[0] > 0:
@@ -90,14 +85,15 @@ async def user_exists_in_db(user_id):
             conn.close()
     return False
 
-async def get_user_data(user_id):
+async def get_user_data(user_tgid):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM users WHERE user_id = %s", (user_id,))
+            cursor.execute("SELECT * FROM users WHERE user_tgid = %s", (user_tgid,))
             user_data = cursor.fetchone()
             cursor.close()
+            print("User data:", user_data)  # Отладочное сообщение для проверки данных о пользователе
             return user_data
         except mysql.connector.Error as e:
             logging.error(f"Error fetching user data from database: {e}")
@@ -106,188 +102,171 @@ async def get_user_data(user_id):
     return None
 
 
-
-
 # ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
 
-async def update_user_in_db(user_id, name, age, description):
+async def update_user_type(user_tgid, new_user_type):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET name = %s, age = %s, description = %s, WHERE user_id = %s",
-                           (name, age, description, user_id))
+            cursor.execute("UPDATE users SET user_type = %s WHERE user_tgid = %s",
+                           (new_user_type, user_tgid))
             conn.commit()
-            logging.info(f"User info updated in the database for user with ID {user_id}")
-            cursor.close()
-        except mysql.connector.Error as e:
-            logging.error(f"Error updating user info in database: {e}")
-        finally:
-            conn.close()
-
-async def update_user_type(user_id, new_user_type):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_type = %s WHERE user_id = %s",
-                           (new_user_type, user_id))
-            conn.commit()
-            logging.info(f"User with ID {user_id} updated with new user type: {new_user_type}")
+            logging.info(f"User with ID {user_tgid} updated with new user type: {new_user_type}")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error updating user type in database: {e}")
         finally:
             conn.close()
 
-async def update_user_location(user_id, new_location):
+async def update_user_location(user_tgid, new_location):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET location = %s WHERE user_id = %s",
-                           (new_location, user_id))
+            cursor.execute("UPDATE users SET user_location = %s WHERE user_tgid = %s",
+                           (new_location, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new location: {new_location}")
+            logging.info(f"User with ID {user_tgid} updated with new user_location: {new_location}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user location in database: {e}")
+            logging.error(f"Error updating user user_location in database: {e}")
         finally:
             conn.close()
 
-async def update_user_age(user_id, new_age):
+async def update_user_age(user_tgid, new_age):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET age = %s WHERE user_id = %s",
-                           (new_age, user_id))
+            cursor.execute("UPDATE users SET user_age = %s WHERE user_tgid = %s",
+                           (new_age, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new age: {new_age}")
+            logging.info(f"User with ID {user_tgid} updated with new user_age: {new_age}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user age in database: {e}")
+            logging.error(f"Error updating user user_age in database: {e}")
         finally:
             conn.close()
 
-async def update_user_description(user_id, new_description):
+async def update_user_description(user_tgid, new_description):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET description = %s WHERE user_id = %s",
-                           (new_description, user_id))
+            cursor.execute("UPDATE users SET user_description = %s WHERE user_tgid = %s",
+                           (new_description, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new description: {new_description}")
+            logging.info(f"User with ID {user_tgid} updated with new user_description: {new_description}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user description in database: {e}")
+            logging.error(f"Error updating user user_description in database: {e}")
         finally:
             conn.close()
 
-async def update_user_name(user_id, new_name):
+async def update_user_name(user_tgid, new_name):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET name = %s WHERE user_id = %s",
-                           (new_name, user_id))
+            cursor.execute("UPDATE users SET user_what_is_your_name = %s WHERE user_tgid = %s",
+                           (new_name, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new name: {new_name}")
+            logging.info(f"User with ID {user_tgid} updated with new user_what_is_your_name: {new_name}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user name in database: {e}")
+            logging.error(f"Error updating user user_what_is_your_name in database: {e}")
         finally:
             conn.close()
 
-async def update_user_citizenship(user_id, new_citizenship):
+async def update_user_citizenship(user_tgid, new_citizenship):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET citizenship = %s WHERE user_id = %s",
-                           (new_citizenship, user_id))
+            cursor.execute("UPDATE users SET user_citizenship = %s WHERE user_tgid = %s",
+                           (new_citizenship, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new citizenship: {new_citizenship}")
+            logging.info(f"User with ID {user_tgid} updated with new user_citizenship: {new_citizenship}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user citizenship in database: {e}")
+            logging.error(f"Error updating user user_citizenship in database: {e}")
         finally:
             conn.close()
 
-async def update_user_skills(user_id, new_skills):
+async def update_user_skills(user_tgid, new_skills):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET skills = %s WHERE user_id = %s",
-                           (new_skills, user_id))
+            cursor.execute("UPDATE users SET user_skills = %s WHERE user_tgid = %s",
+                           (new_skills, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new skills: {new_skills}")
+            logging.info(f"User with ID {user_tgid} updated with new user_skills: {new_skills}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user skills in database: {e}")
+            logging.error(f"Error updating user user_skills in database: {e}")
         finally:
             conn.close()
 
-async def send_resume(user_id, resume):
+async def send_resume(user_tgid, resume):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET desired_position = %s, experience = %s, "
-                           "experience_description = %s, additional_info = %s, skills = %s, "
-                           "citizenship = %s, user_fullname = %s WHERE user_id = %s",
-                           (resume['desired_position'], json.dumps(resume['experience']), resume['experience_description'],
-                            resume['additional_info'], resume['skills'], resume['citizenship'],
-                            resume['user_fullname'], user_id))
+            cursor.execute("UPDATE users SET user_desired_position = %s, user_experience = %s, "
+                           "user_experience_description = %s, user_additional_info = %s, user_skills = %s, "
+                           "user_citizenship = %s, user_what_is_your_name = %s WHERE user_tgid = %s",
+                           (resume['user_desired_position'], json.dumps(resume['user_experience']), resume['user_experience_description'],
+                            resume['user_additional_info'], resume['user_skills'], resume['user_citizenship'],
+                            resume['user_what_is_your_name'], user_tgid))
             conn.commit()
-            logging.info(f"Resume sent for user with ID {user_id}")
+            logging.info(f"Resume sent for user with ID {user_tgid}")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error sending resume for user in database: {e}")
         finally:
             conn.close()
 
-async def update_user_experience(user_id, new_experience):
+async def update_user_experience(user_tgid, new_experience):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET experience = %s WHERE user_id = %s",
-                           (json.dumps(new_experience), user_id))
+            cursor.execute("UPDATE users SET user_experience = %s WHERE user_tgid = %s",
+                           (json.dumps(new_experience), user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new experience: {new_experience}")
+            logging.info(f"User with ID {user_tgid} updated with new user_experience: {new_experience}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user experience in database: {e}")
+            logging.error(f"Error updating user user_experience in database: {e}")
         finally:
             conn.close()
 
-async def update_user_fullname(user_id, new_fullname):
+async def update_user_fullname(user_tgid, new_fullname):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_fullname = %s WHERE user_id = %s",
-                           (new_fullname, user_id))
+            cursor.execute("UPDATE users SET user_fio = %s WHERE user_tgid = %s",
+                           (new_fullname, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new user_fullname: {new_fullname}")
+            logging.info(f"User with ID {user_tgid} updated with new user_fio: {new_fullname}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user user_fullname in database: {e}")
+            logging.error(f"Error updating user user_fio in database: {e}")
         finally:
             conn.close()
 
-async def update_user_desired_position(user_id, new_desired_position):
+async def update_user_desired_position(user_tgid, new_desired_position):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET desired_position = %s WHERE user_id = %s",
-                           (new_desired_position, user_id))
+            cursor.execute("UPDATE users SET user_desired_position = %s WHERE user_tgid = %s",
+                           (new_desired_position, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_id} updated with new desired position: {new_desired_position}")
+            logging.info(f"User with ID {user_tgid} updated with new desired position: {new_desired_position}")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error updating user desired position in database: {e}")
@@ -295,13 +274,8 @@ async def update_user_desired_position(user_id, new_desired_position):
             conn.close()
 
 
-
-
-
-
 # ТОЛЬКО ДЛЯ ТИПА EMPLOYER
-
-async def add_user_to_db_type_employer(message, employer_id, employer_username, employer_name, employer_type):
+async def add_user_to_db_type_employer(employer_id, employer_username, employer_name, employer_type):
     conn = await create_connection()
     if conn:
         try:
@@ -371,27 +345,25 @@ async def get_employer_data(employer_id):
     return None
 
 
-
 # ВАКАНСИИ
-
-async def mark_vacancy_as_viewed(user_id, vacancy_id):
+async def mark_vacancy_as_viewed(user_tgid, vacancy_id):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO viewed_vacancies (user_id, vacancy_id) VALUES (%s, %s)", (user_id, vacancy_id))
+            cursor.execute("INSERT INTO viewed_vacancies (user_tgid, vacancy_id) VALUES (%s, %s)", (user_tgid, vacancy_id))
             conn.commit()
         except mysql.connector.Error as e:
             logging.error(f"Error marking vacancy as viewed: {e}")
         finally:
             conn.close()
 
-async def is_vacancy_viewed_by_user(user_id, vacancy_id):
+async def is_vacancy_viewed_by_user(user_tgid, vacancy_id):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM viewed_vacancies WHERE user_id = %s AND vacancy_id = %s", (user_id, vacancy_id))
+            cursor.execute("SELECT COUNT(*) FROM viewed_vacancies WHERE user_tgid = %s AND vacancy_id = %s", (user_tgid, vacancy_id))
             result = cursor.fetchone()
             cursor.close()
             return result[0] > 0
@@ -401,10 +373,10 @@ async def is_vacancy_viewed_by_user(user_id, vacancy_id):
             conn.close()
     return False
 
-async def get_random_vacancy_for_user(user_id):
+async def get_random_vacancy_for_user(user_tgid):
     while True:
         random_vacancy = await get_random_vacancy()
-        if not await is_vacancy_viewed_by_user(user_id, random_vacancy['vacancy_id']):
+        if not await is_vacancy_viewed_by_user(user_tgid, random_vacancy['vacancy_id']):
             return random_vacancy
 
 async def get_random_vacancy():
@@ -422,12 +394,15 @@ async def get_random_vacancy():
             conn.close()
     return None
 
-async def view_vacancy(user_id, vacancy_id):
-    if not await is_vacancy_viewed_by_user(user_id, vacancy_id):
-        await mark_vacancy_as_viewed(user_id, vacancy_id)
+async def view_vacancy(user_tgid, vacancy_id):
+    if not await is_vacancy_viewed_by_user(user_tgid, vacancy_id):
+        await mark_vacancy_as_viewed(user_tgid, vacancy_id)
         print("Vacancy viewed successfully!")
     else:
         print("Vacancy already viewed by user.")
+
+
+
 
 
 
