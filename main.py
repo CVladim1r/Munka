@@ -4,14 +4,7 @@ import json
 from random import uniform
 
 from aiogram import Bot, Dispatcher, types
-import logging
-import asyncio
-import json
-from random import uniform
-
-from aiogram import Bot, Dispatcher, types
 from aiogram.contrib.middlewares.logging import LoggingMiddleware
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.utils import executor
 from aiogram.dispatcher import FSMContext
 from aiogram.dispatcher.filters.state import State, StatesGroup
@@ -19,21 +12,16 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import ParseMode
 from aiogram.dispatcher.filters import Text
 
-from aiogram.utils import executor
-from aiogram.dispatcher import FSMContext
-from utils.states import *
-from aiogram.types import ParseMode
-
 from bot.user_registration import register_job_seeker, register_employer
 from bot.keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard, get_send_or_dislike_resume_keyboard
-from bot.cities import city_list
-# from keyboards.reply import *
+from bot.cities import CITIES
 from bot.format_data import format_vacancy
 
 from database.db_connector import update_user_citizenship, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, update_user_age, update_user_name
 from database.db_connector import get_random_vacancy_for_user
 
 from config import TOKEN
+
 logging.basicConfig(level=logging.INFO)
 
 storage = MemoryStorage()
@@ -66,37 +54,6 @@ class UserForm(StatesGroup):
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()
 
-@dp.message_handler(commands=['start'], state="*")
-async def start(message: types.Message, state: FSMContext):
-    user_id = message.from_user.id
-    user_name = message.from_user.username
-    name = ""
-    user = message.from_user.first_name if not message.from_user.username else message.from_user.username
-    
-    if not user_name:
-        user_name = str(user_id)
-        
-    user_data = await get_user_data(user_id)
-    employer_data = await get_employer_data(user_id)
-
-    if employer_data:
-        name = employer_data.get("name")
-        await main_menu_employer(message.from_user.id, message.message_id)
-        return
-    
-    elif user_data:
-        name = user_data.get("name")
-        user_type = user_data.get("user_type")
-        if user_type == "USER":
-            await main_menu_user(message.from_user.id, message.message_id)
-            return
-        
-    await bot.send_message(message.chat.id, '''Привет я кот Миша.\n
-Я выполняю здесь самую главную функцию: помогаю соискателям и работодателям найти друг друга. 
-Представь, у каждого есть работа, а в мире царит гармония – мяу, красота. Для этого я здесь.''', reply_markup=None)
-    await asyncio.sleep(4)
-    await message.answer("Давай теперь познакомимся поближе. Кто ты?", reply_markup=await get_choose_rule())
-    await UserForm.next()
 
 async def main_menu_user(user_id, message_id):
     main_text = "Искать вакансии\n"
@@ -186,10 +143,11 @@ async def process_age(message: types.Message, state: FSMContext):
 
 async def normalize_city(city_name):
     print(f"Searching for city: {city_name}")
-    for key, variants in city_list.items():
-        if city_name.lower() in variants:
-            print(f"Found city: {key}")
-            return key
+    for key, variants in CITIES.items():
+        for variant in variants:
+            if city_name.lower() in variant:
+                print(f"Found city: {key}")
+                return key
     return None
 
 @dp.callback_query_handler(lambda query: query.data.startswith('location_'), state=UserForm.location)
@@ -512,6 +470,7 @@ async def help_command(message: types.Message):
         await message.answer('help_text', reply_markup=None)
     else:
         await message.answer('SuckMyDickBROOO', reply_markup=None)
+
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
