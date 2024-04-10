@@ -34,7 +34,6 @@ from database.db_connector import update_user_citizenship, update_user_fullname,
 from database.db_connector import get_random_vacancy_for_user
 
 from config import TOKEN
-
 logging.basicConfig(level=logging.INFO)
 
 storage = MemoryStorage()
@@ -43,7 +42,7 @@ dp = Dispatcher(bot, storage=storage)
 dp.middleware.setup(LoggingMiddleware())
 
 class UserForm(StatesGroup):
-    nickname = State()
+    user_what_is_your_name = State()
     regStart = State()
     age = State()
     description = State()
@@ -187,7 +186,7 @@ async def process_age(message: types.Message, state: FSMContext):
 
 async def normalize_city(city_name):
     print(f"Searching for city: {city_name}")
-    for key, variants in CITIES.items():
+    for key, variants in city_list.items():
         if city_name.lower() in variants:
             print(f"Found city: {key}")
             return key
