@@ -20,7 +20,7 @@ from bot.format_data import format_vacancy
 from database.db_connector import update_user_citizenship, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, update_user_age, update_user_name
 from database.db_connector import get_random_vacancy_for_user
 
-from config import TOKEN
+from bot.config import TOKEN
 
 logging.basicConfig(level=logging.INFO)
 
@@ -55,19 +55,19 @@ class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()
 
 
-async def main_menu_user(user_id, message_id):
+async def main_menu_user(user_tgid, message_id):
     main_text = "Искать вакансии\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
-    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
+    await bot.send_message(user_tgid, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
 
-async def main_menu_employer(user_id, message_id):
+async def main_menu_employer(user_tgid, message_id):
     main_text = "Искать вакансии:\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
-    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_employer_buttons(), disable_notification=True)
+    await bot.send_message(user_tgid, main_text, reply_markup=await get_choose_menu_employer_buttons(), disable_notification=True)
 
 
 
@@ -303,8 +303,8 @@ async def process_skills(message: types.Message, state: FSMContext):
     await UserForm.resume_check.set()
     await process_resume_check(message, state)
 
-@dp.message_handler(state=UserForm.resume_check)
-async def process_resume_check(message: types.Message, state: FSMContext):
+@dp.callback_query_handler(lambda callback_query: True, state=UserForm.resume_check)
+async def process_resume_check(callback_query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         resume = f"Имя: {data['fio']}\n" \
                  f"Гражданство: {data['citizenship']}\n" \
@@ -313,16 +313,25 @@ async def process_resume_check(message: types.Message, state: FSMContext):
         for experience in data.get('experience', []):
             resume += f"- {experience['company_name']}: {experience['description']}\n"
         resume += f"Навыки: {data.get('skills')}"
-        await message.answer(f"Ваше резюме:\n{resume}", reply_markup=None)
-        await message.answer("Желаете что-нибудь подправить или начать заново?", reply_markup=await get_save_restart_keyboard())
-        if message.text.lower() in ['да', 'save_resume', 'сохранить', '/save_resume', 'Сохранить']:
+        await callback_query.answer(f"Ваше резюме:\n{resume}", reply_markup=None)
+        await callback_query.answer("Желаете что-нибудь подправить или начать заново?", reply_markup=await get_save_restart_keyboard())
+        if callback_query.data == 'save_resume' or callback_query.message.text.lower() in ['да', 'save_resume', 'сохранить', '/save_resume', 'Сохранить']:
             await UserForm.resume_confirmation.set()
-            await process_resume_confirmation(message, state)
-
+            await send_resume(callback_query.from_user.id, await state.get_data())
+            await callback_query.message.answer("Резюме успешно отправлено!")
+            await main_menu_user(callback_query.from_user.id, callback_query.message.message_id)
+        elif callback_query.data == 'restart_resume' or callback_query.message.text.lower() in ['нет', 'restart_resume', 'отмена', '/restart_resume', 'Отмена']:
+            await restart_resume(callback_query.message, state)
         else:
-            await process_resume_confirmation(message, state)
-
+            await process_resume_confirmation(callback_query.message, state)
+        await state.finish()
     await state.finish()
+
+async def restart_resume(message: types.Message, state: FSMContext):
+    await state.reset_state()
+    await message.answer("Процесс заполнения резюме начат заново.")
+    await resume_start(message, state=state)
+    await UserForm.fullname.set()
 
 @dp.message_handler(state=UserForm.resume_confirmation)
 async def process_resume_confirmation(message: types.Message, state: FSMContext):
@@ -338,11 +347,11 @@ async def process_resume_confirmation(message: types.Message, state: FSMContext)
 
 @dp.message_handler(lambda message: message.text == "/search" or message.text == "🔍 Искать Вакансии")
 async def search_vacancies(message: types.Message):
-    user_id = message.from_user.id
-    user_data = await get_user_data(user_id)
+    user_tgid = message.from_user.id
+    user_data = await get_user_data(user_tgid)
 
     if user_data:
-        random_vacancy = await get_random_vacancy_for_user(user_id)
+        random_vacancy = await get_random_vacancy_for_user(user_tgid)
 
         if random_vacancy:
             formatted_vacancy = await format_vacancy(random_vacancy)
@@ -364,11 +373,11 @@ async def search_vacancies(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "👎", state="*")
 async def dislike_resume(message: types.Message):
-    user_id = message.from_user.id
-    user_data = await get_user_data(user_id)
+    user_tgid = message.from_user.id
+    user_data = await get_user_data(user_tgid)
 
     if user_data:
-        random_vacancy = await get_random_vacancy_for_user(user_id)
+        random_vacancy = await get_random_vacancy_for_user(user_tgid)
 
         if random_vacancy:
             formatted_vacancy = await format_vacancy(random_vacancy)
@@ -385,8 +394,8 @@ async def dislike_resume(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == '✉', state="*")
 async def send_resume(message: types.Message):
-    user_id = message.from_user.id
-    user_data = await get_user_data(user_id)
+    user_tgid = message.from_user.id
+    user_data = await get_user_data(user_tgid)
 
     if user_data:
         await message.answer("Резюме отправлено!\n\nТеперь можно перейти к просмотру анкет дальше!")
@@ -398,9 +407,9 @@ async def personal_sleep(message: types.Message):
     
 @dp.message_handler(lambda message: message.text == "👤 Личный кабинет", state="*")
 async def personal_cabinet(message: types.Message):
-    user_id = message.from_user.id
+    user_tgid = message.from_user.id
 
-    user_data = await get_user_data(user_id)
+    user_data = await get_user_data(user_tgid)
     print("User data:", user_data)  # Отладочное сообщение для проверки данных о пользователе
 
     if user_data:
@@ -431,11 +440,11 @@ async def personal_cabinet(message: types.Message):
 
 @dp.message_handler(lambda message: message.text == "↩️ Назад", state="*")
 async def back_to_main_menu(message: types.Message):
-    user_id = message.from_user.id
-    user_data = await get_user_data(user_id)
+    user_tgid = message.from_user.id
+    user_data = await get_user_data(user_tgid)
     if user_data:
         name = user_data.get("name")
-        await main_menu_user(user_id, name)
+        await main_menu_user(user_tgid, name)
     else:
         await message.answer("Информация о пользователе не найдена. Пройдите регистрацию нажав на команду /start", reply_markup=None)
 
@@ -462,8 +471,8 @@ async def help_command(message: types.Message):
 
 @dp.message_handler(commands=['about'], state="*")
 async def help_command(message: types.Message):
-    user_id = message.from_user.id
-    user_data = await get_user_data(user_id)
+    user_tgid = message.from_user.id
+    user_data = await get_user_data(user_tgid)
 
     if user_data:
         await main_menu_user(message.from_user.id, message.message_id)

@@ -93,7 +93,7 @@ async def get_user_data(user_tgid):
             cursor.execute("SELECT * FROM users WHERE user_tgid = %s", (user_tgid,))
             user_data = cursor.fetchone()
             cursor.close()
-            print("User data:", user_data)  # Отладочное сообщение для проверки данных о пользователе
+            print("User data:", user_data) 
             return user_data
         except mysql.connector.Error as e:
             logging.error(f"Error fetching user data from database: {e}")
