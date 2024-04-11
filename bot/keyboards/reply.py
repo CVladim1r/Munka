@@ -10,7 +10,6 @@ async def get_send_or_dislike_resume_keyboard():
             ]
         ],
         resize_keyboard=True,
-        
     )
     return keyboard
 

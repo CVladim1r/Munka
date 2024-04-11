@@ -26,15 +26,15 @@ CREATE TABLE IF NOT EXISTS `employers` (
 CREATE TABLE IF NOT EXISTS `vacancies` (
   `vacancy_id` INT NOT NULL AUTO_INCREMENT,
   `vacancy_title` VARCHAR(255) DEFAULT NULL,
-  `company_name` VARCHAR(255) DEFAULT NULL,
+  `vacancy_company_name` VARCHAR(255) DEFAULT NULL,
   `vacancy_url` VARCHAR(255) DEFAULT NULL,
-  `created_date` DATE DEFAULT NULL,
-  `employment` VARCHAR(255) DEFAULT NULL,
-  `working_time_modes` TEXT,
-  `experience` VARCHAR(255) DEFAULT NULL,
-  `salary_info` VARCHAR(255) DEFAULT NULL,
-  `description` TEXT,
-  `skills` TEXT,
+  `vacancy_created_date` DATE DEFAULT NULL,
+  `vacancy_employment` VARCHAR(255) DEFAULT NULL,
+  `vacancy_working_time_modes` TEXT,
+  `vacancy_experience` VARCHAR(255) DEFAULT NULL,
+  `vacancy_salary_info` VARCHAR(255) DEFAULT NULL,
+  `vacancy_description` TEXT,
+  `vacancy_skills` TEXT,
   PRIMARY KEY (`vacancy_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
@@ -66,6 +66,14 @@ CREATE TABLE IF NOT EXISTS `vacancy_applicants` (
   `user_id` INT NULL,
   FOREIGN KEY (`vacancy_id`) REFERENCES `vacancies` (`vacancy_id`) ON DELETE CASCADE,
   FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- Создание таблицы plug_users
+CREATE TABLE IF NOT EXISTS `plug_users` (
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY
+  `user_id` int NOT NULL,
+  `user_username` varchar(255) UNIQUE,
+  `user_name` varchar(255)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Создание триггера для автоматической вставки записей в таблицу vacancy_applicants

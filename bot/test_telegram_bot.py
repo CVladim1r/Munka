@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import Mock, patch
 from aiogram import types
-from main import dp, start, process_user_type, process_age, process_location, process_nickname, process_description
+from bot.start_bot import dp, start, process_user_type, process_age, process_location, process_nickname, process_description
 
 class TestTelegramBot(unittest.TestCase):
     

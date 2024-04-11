@@ -20,7 +20,7 @@ from bot.format_data import format_vacancy
 from database.db_connector import update_user_citizenship, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, update_user_age, update_user_name
 from database.db_connector import get_random_vacancy_for_user
 
-from config import TOKEN
+from bot.config import TOKEN
 
 logging.basicConfig(level=logging.INFO)
 
@@ -303,8 +303,8 @@ async def process_skills(message: types.Message, state: FSMContext):
     await UserForm.resume_check.set()
     await process_resume_check(message, state)
 
-@dp.message_handler(state=UserForm.resume_check)
-async def process_resume_check(message: types.Message, state: FSMContext):
+@dp.callback_query_handler(lambda callback_query: True, state=UserForm.resume_check)
+async def process_resume_check(callback_query: types.CallbackQuery, state: FSMContext):
     async with state.proxy() as data:
         resume = f"Имя: {data['fio']}\n" \
                  f"Гражданство: {data['citizenship']}\n" \
@@ -313,16 +313,25 @@ async def process_resume_check(message: types.Message, state: FSMContext):
         for experience in data.get('experience', []):
             resume += f"- {experience['company_name']}: {experience['description']}\n"
         resume += f"Навыки: {data.get('skills')}"
-        await message.answer(f"Ваше резюме:\n{resume}", reply_markup=None)
-        await message.answer("Желаете что-нибудь подправить или начать заново?", reply_markup=await get_save_restart_keyboard())
-        if message.text.lower() in ['да', 'save_resume', 'сохранить', '/save_resume', 'Сохранить']:
+        await callback_query.answer(f"Ваше резюме:\n{resume}", reply_markup=None)
+        await callback_query.answer("Желаете что-нибудь подправить или начать заново?", reply_markup=await get_save_restart_keyboard())
+        if callback_query.data == 'save_resume' or callback_query.message.text.lower() in ['да', 'save_resume', 'сохранить', '/save_resume', 'Сохранить']:
             await UserForm.resume_confirmation.set()
-            await process_resume_confirmation(message, state)
-
+            await send_resume(callback_query.from_user.id, await state.get_data())
+            await callback_query.message.answer("Резюме успешно отправлено!")
+            await main_menu_user(callback_query.from_user.id, callback_query.message.message_id)
+        elif callback_query.data == 'restart_resume' or callback_query.message.text.lower() in ['нет', 'restart_resume', 'отмена', '/restart_resume', 'Отмена']:
+            await restart_resume(callback_query.message, state)
         else:
-            await process_resume_confirmation(message, state)
-
+            await process_resume_confirmation(callback_query.message, state)
+        await state.finish()
     await state.finish()
+
+async def restart_resume(message: types.Message, state: FSMContext):
+    await state.reset_state()
+    await message.answer("Процесс заполнения резюме начат заново.")
+    await resume_start(message, state=state)
+    await UserForm.fullname.set()
 
 @dp.message_handler(state=UserForm.resume_confirmation)
 async def process_resume_confirmation(message: types.Message, state: FSMContext):
