@@ -1,10 +1,11 @@
-from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.fsm.state import StatesGroup, State
 class UserForm(StatesGroup):
     nickname = State()
     regStart = State()
     age = State()
     description = State()
     company_name = State()
+    user_what_is_your_name = State()
     location = State()
     fullname = State() 
     citizenship = State()
@@ -20,6 +21,9 @@ class UserForm(StatesGroup):
     experience_description = State()
     search_vacancies = State()
     dislike_resume = State()
+    user_fullname = State()
+    user_tgid = State()
+    user_tgname = State()
     
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()

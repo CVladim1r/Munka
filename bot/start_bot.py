@@ -333,6 +333,14 @@ async def restart_resume(message: types.Message, state: FSMContext):
     await resume_start(message, state=state)
     await UserForm.fullname.set()
 
+
+
+
+######################################################################################################################################################################################
+
+
+
+
 @dp.message_handler(state=UserForm.resume_confirmation)
 async def process_resume_confirmation(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
