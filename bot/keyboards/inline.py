@@ -11,7 +11,7 @@ async def get_choose_rule():
     Inlinekeyboard.add(InlineKeyboardButton("Соискатель", callback_data="job_seeker"))
     Inlinekeyboard.add(InlineKeyboardButton("Работодатель", callback_data="employer"))
     return Inlinekeyboard
-
+#fjfjfjjfjf
 async def get_location_keyboard():
     keyboard = InlineKeyboardMarkup()
     keyboard.row(
