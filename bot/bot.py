@@ -4,6 +4,7 @@ from config_reader import config
 from aiogram import Bot, Dispatcher
 import logging
 import handlers
+import handlers.bot_messages
 
 
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
@@ -17,7 +18,8 @@ logger.info("Бот запущен и работает...")
 async def main():  
     
     dp.include_routers(
-        handlers.user_commands.router
+        handlers.user_commands.router,
+        handlers.bot_messages.router
     )
     await dp.start_polling(bot)
 

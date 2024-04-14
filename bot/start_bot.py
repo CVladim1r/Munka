@@ -465,6 +465,7 @@ async def about_bot(message: types.Message):
 async def about_bot(message: types.Message):
     await message.answer("Желаете что-нибудь подправить или начать заново?", reply_markup=await get_save_restart_keyboard())
 
+
 @dp.message_handler(commands=['help'], state="*")
 async def help_command(message: types.Message):
     help_text = "Список доступных команд:\n"

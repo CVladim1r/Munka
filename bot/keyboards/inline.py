@@ -22,16 +22,16 @@ async def get_choose_rule():
     )
     return Inlinekeyboard
 
-async def get_location_keyboard():
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(text="Питер", callback_data="location_spb"),
-                InlineKeyboardButton(text="Москва", callback_data="location_moscow")
-            ],
-            [
-                InlineKeyboardButton(text="Сочи", callback_data="location_sochi")
-            ]
-        ]
-    )
-    return keyboard
+# async def get_location_keyboard():
+#     keyboard = InlineKeyboardMarkup(
+#         inline_keyboard=[
+#             [
+#                 InlineKeyboardButton(text="Питер", callback_data="location_spb"),
+#                 InlineKeyboardButton(text="Москва", callback_data="location_moscow")
+#             ],
+#             [
+#                 InlineKeyboardButton(text="Сочи", callback_data="location_sochi")
+#             ]
+#         ]
+#     )
+#     return keyboard

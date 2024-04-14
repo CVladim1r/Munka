@@ -1,15 +1,39 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
+from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, ReplyKeyboardRemove
+
+rmk = ReplyKeyboardRemove()
 
 async def get_send_or_dislike_resume_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
                 KeyboardButton(text="👎"),
-                KeyboardButton("✉"),
-                KeyboardButton("😴")
+                KeyboardButton(text="✉"),
+                KeyboardButton(text="😴")
             ]
         ],
         resize_keyboard=True,
+    )
+    return keyboard
+
+finReg = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="✅Подтвердить")
+        ]
+    ]
+)
+
+async def get_location_keyboard():
+    keyboard = ReplyKeyboardMarkup(
+        keyboard=[
+            [
+                KeyboardButton(text="Питер"),
+                KeyboardButton(text="Москва")
+            ],
+            [
+                KeyboardButton(text="Сочи")
+            ]
+        ]
     )
     return keyboard
 
@@ -17,12 +41,12 @@ async def get_position_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton("Повар"),
-                KeyboardButton("Официант")
+                KeyboardButton(text="Повар"),
+                KeyboardButton(text="Официант")
             ],
             [
-                KeyboardButton("Бариста"),
-                KeyboardButton("Другое")
+                KeyboardButton(text="Бариста"),
+                KeyboardButton(text="Другое")
             ]
         ],
         resize_keyboard=True
@@ -33,12 +57,12 @@ async def get_citizenship_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton("РФ"),
-                KeyboardButton("Казахстан")
+                KeyboardButton(text="РФ"),
+                KeyboardButton(text="Казахстан")
             ],
             [
-                KeyboardButton("Беларусь"),
-                KeyboardButton("Грузия")
+                KeyboardButton(text="Беларусь"),
+                KeyboardButton(text="Грузия")
             ]
         ],
         
@@ -49,8 +73,8 @@ async def get_yes_no_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton("Да"),
-                KeyboardButton("Нет")
+                KeyboardButton(text="Да"),
+                KeyboardButton(text="Нет")
             ]
         ],
         resize_keyboard=True)
@@ -60,12 +84,12 @@ async def get_choose_menu_user_buttons():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton("🔍 Искать Вакансии"),
-                KeyboardButton("👤 Личный кабинет")
+                KeyboardButton(text="🔍 Искать Вакансии"),
+                KeyboardButton(text="👤 Личный кабинет")
             ],
             [
-                KeyboardButton("✏️ Редактировать резюме"),
-                KeyboardButton("ℹ️ О боте")
+                KeyboardButton(text="✏️ Редактировать резюме"),
+                KeyboardButton(text="ℹ️ О боте")
             ]
         ],
         
@@ -76,11 +100,11 @@ async def get_choose_menu_employer_buttons():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton("🔍 Опубликовать вакансию"),
-                KeyboardButton("👤 Информация о компании")
+                KeyboardButton(text="🔍 Опубликовать вакансию"),
+                KeyboardButton(text="👤 Информация о компании")
             ],
             [
-                KeyboardButton("ℹ️ О боте")
+                KeyboardButton(text="ℹ️ О боте")
             ]
         ],
         
@@ -91,12 +115,12 @@ async def get_resume_button():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton("Заполнить анкету заново"),
-                KeyboardButton("Изменить описание")
+                KeyboardButton(text="Заполнить анкету заново"),
+                KeyboardButton(text="Изменить описание")
             ],
             [
-                KeyboardButton("🔍 Искать Вакансии"),
-                KeyboardButton("↩️ Назад")
+                KeyboardButton(text="🔍 Искать Вакансии"),
+                KeyboardButton(text="↩️ Назад")
             ]
         ],
         resize_keyboard=True)
