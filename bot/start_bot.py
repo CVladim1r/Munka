@@ -12,15 +12,15 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import ParseMode
 from aiogram.dispatcher.filters import Text
 
-from bot.user_registration import register_job_seeker, register_employer
-from bot.keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard, get_send_or_dislike_resume_keyboard
-from bot.cities import CITIES
-from bot.format_data import format_vacancy
+from user_registration import register_job_seeker, register_employer
+from keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard, get_send_or_dislike_resume_keyboard
+from cities import CITIES
+from format_data import format_vacancy
 
 from database.db_connector import update_user_citizenship, update_user_fullname, update_user_desired_position, update_user_experience, update_user_skills, send_resume, update_user_citizenship, get_user_data, get_employer_data, update_user_location, update_user_age, update_user_name
 from database.db_connector import get_random_vacancy_for_user
 
-from bot.config import TOKEN
+from config import TOKEN
 
 logging.basicConfig(level=logging.INFO)
 
