@@ -333,6 +333,14 @@ async def restart_resume(message: types.Message, state: FSMContext):
     await resume_start(message, state=state)
     await UserForm.fullname.set()
 
+
+
+
+######################################################################################################################################################################################
+
+
+
+
 @dp.message_handler(state=UserForm.resume_confirmation)
 async def process_resume_confirmation(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
@@ -456,6 +464,7 @@ async def about_bot(message: types.Message):
 @dp.message_handler(lambda message: message.text == "✏️ Редактировать резюме", state="*")
 async def about_bot(message: types.Message):
     await message.answer("Желаете что-нибудь подправить или начать заново?", reply_markup=await get_save_restart_keyboard())
+
 
 @dp.message_handler(commands=['help'], state="*")
 async def help_command(message: types.Message):

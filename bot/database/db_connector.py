@@ -5,7 +5,7 @@ import json
 
 logging.basicConfig(level=logging.INFO)
 
-# Соединение с БД
+# Соединение с БДpip install mysql-connector-python
 
 async def create_connection():
     try:
