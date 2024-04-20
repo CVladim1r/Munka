@@ -11,12 +11,14 @@ bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 dp = Dispatcher() 
 
 logging.basicConfig(level=logging.INFO)
+
+# Позже надо убрать логирование в консоли
 logger = logging.getLogger(__name__)
 
 logger.info("Бот запущен и работает...")
 
 async def main():  
-    
+    # include_routers (маршруты)
     dp.include_routers(
         handlers.user_commands.router,
         handlers.bot_messages.router

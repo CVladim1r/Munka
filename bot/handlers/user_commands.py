@@ -75,8 +75,9 @@ async def start(msg: Message, state: FSMContext):
         user_tgname = str(user_tgid)
 
 
-    
     await bot.send_message(msg.chat.id, '''Привет я кот Миша.\nЯ выполняю здесь самую главную функцию: помогаю соискателям и работодателям найти друг друга. Представь, у каждого есть работа, а в мире царит гармония – мяу, красота. Для этого я здесь.''', reply_markup=None)
+
+    # Позже надо реализовать не через asyncio.sleep
     await asyncio.sleep(4)
     await msg.answer("Давай теперь познакомимся поближе. Кто ты?", reply_markup=await get_choose_rule())
 

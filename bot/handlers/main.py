@@ -1,3 +1,4 @@
+# Он тут увидимо по приколу
 # from aiogram import Dispatcher
 
 # from admin import register_admin_handlers

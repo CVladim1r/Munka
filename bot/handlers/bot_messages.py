@@ -10,6 +10,7 @@ router = Router()
 
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
+# Позже надо разбить регистрацию
 
 async def main_menu_user(user_id, message_id):
     main_text = "Искать вакансии\n"
@@ -17,9 +18,6 @@ async def main_menu_user(user_id, message_id):
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
     await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
-
-
-
 
 @router.message(F.text=='🔍 Искать Вакансии')
 async def seacrh_vacancies(msg: Message):
