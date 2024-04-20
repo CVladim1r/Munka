@@ -1,4 +1,4 @@
-from bot import start_bot
+from bot import bot
 
 if __name__ == '__main__':
-    start_bot()
+    bot()

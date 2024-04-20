@@ -1,8 +1,46 @@
-Схема проекта:
+Схема проекта v1:
 
 JFBot/
 │
 ├── bot/
+│   ├── __init__.py
+│   ├── keyboards.py
+│   └── user_registration.py
+│
+├── models/
+│   └── __init__.py
+│
+├── database/
+│   ├── __init__.py
+│   └── db_connector.py
+│
+├── data/
+│   └── vacancies.csv
+│   
+├── parser/
+│   ├── HeadHunter/
+│   │   ├── pars-upt.py
+│   │   ├── start-parser.py
+│   │   ├── vacancies.py
+│   │   └── hh-ru.py
+│   └── main.py
+│
+├── main.py
+├── config.py
+├── createDB.sql
+└── requirements.txt
+
+Схема проекта v2:
+
+JFBot/
+│
+├── bot/
+│   ├── data/
+│   ├── database/
+│   ├── keyboards.py
+│   ├── keyboards.py
+│   ├── keyboards.py
+│   ├── keyboards.py
 │   ├── __init__.py
 │   ├── keyboards.py
 │   └── user_registration.py
