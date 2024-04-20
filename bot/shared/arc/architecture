@@ -1,21 +1,33 @@
-Схема проекта v1:
+Схема проекта v2:
 
 JFBot/
 │
 ├── bot/
+│   ├── data/
+│   │   └── vacancies.csv
+│   │
+│   ├── database/
+│   │   ├── __init__.py
+│   │   └── db_connector.py
+│   │
+│   ├── filters/
+│   ├── handlers/
+│   ├── keyboards/
+│   ├── parser/
+│   ├── shared/
+│   ├── utils/
+│   │
 │   ├── __init__.py
-│   ├── keyboards.py
+│   ├── bot.py
+│   ├── cities.py
+│   ├── config_reader.py
+│   ├── format_data.py
+│   ├── plug_bot.py
+│   ├── start_bot.py
+│   ├── unit_tests_bot.py
 │   └── user_registration.py
 │
-├── models/
-│   └── __init__.py
 │
-├── database/
-│   ├── __init__.py
-│   └── db_connector.py
-│
-├── data/
-│   └── vacancies.csv
 │   
 ├── parser/
 │   ├── HeadHunter/
@@ -25,22 +37,18 @@ JFBot/
 │   │   └── hh-ru.py
 │   └── main.py
 │
-├── main.py
-├── config.py
-├── createDB.sql
-└── requirements.txt
+├── git
+├── LICENSE
+├── README.md
+├── requirements.txt
+└── run.py
 
-Схема проекта v2:
+
+Схема проекта v1:
 
 JFBot/
 │
 ├── bot/
-│   ├── data/
-│   ├── database/
-│   ├── keyboards.py
-│   ├── keyboards.py
-│   ├── keyboards.py
-│   ├── keyboards.py
 │   ├── __init__.py
 │   ├── keyboards.py
 │   └── user_registration.py

@@ -13,7 +13,7 @@ from aiogram import executor
 from random import uniform
 from config import TOKEN_PLUG
 
-from database.db_connector import add_user_to_db_plug_bot
+from bot.database.db_connector import add_user_to_db_plug_bot
 
 logging.basicConfig(level=logging.INFO)
 
