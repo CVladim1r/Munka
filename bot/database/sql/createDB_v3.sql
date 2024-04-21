@@ -42,18 +42,22 @@ CREATE TABLE IF NOT EXISTS users (
   user_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
   user_tgip varchar(255) DEFAULT NULL,
   user_tgid BIGINT,
-  user_type enum('EMPLOYER','USER') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  user_type enum('EMPLOYER','USER') DEFAULT NULL,
   user_tgname varchar(32) DEFAULT NULL,
   user_tgfullname varchar(255) DEFAULT NULL,
+  user_fio varchar(255) DEFAULT NULL,
   user_age int DEFAULT NULL,
+  user_employment enum('FULL','PARTIAL','ONEDAY','UNCLEAR') DEFAULT NULL,
   user_location varchar(255) DEFAULT NULL,
   user_location_text varchar(255) DEFAULT NULL,
-  user_dob date DEFAULT NULL,
   user_citizenship varchar(255) DEFAULT NULL,
+  user_profession varchar(255) DEFAULT NULL,
+  user_desired_salary_level varchar(255) DEFAULT NULL,
   user_experience JSON,
-  user_additional_info text,
+  user_additional_info text DEFAULT NULL,
   user_photo_path varchar(255) DEFAULT NULL,
-  UNIQUE KEY user_nickname (user_nickname)
+  user_language varchar(255) DEFAULT NULL,
+  UNIQUE KEY user_id (user_id)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Создание таблицы vacancy_applicants
