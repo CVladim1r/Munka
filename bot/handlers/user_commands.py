@@ -8,7 +8,7 @@ from database.db_connector import *
 from database.db_connector import get_random_vacancy_for_user
 from user_registration import *
 from cities import CITIES
-from format_data import format_vacancy
+from bot.utils.format_data import format_vacancy
 from config_reader import config
 from keyboards.inline import *
 from keyboards.reply import *

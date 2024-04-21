@@ -3,7 +3,7 @@ from aiogram.types import Message, CallbackQuery
 from keyboards.inline import *
 from keyboards.reply import *
 from database.db_connector import *
-from format_data import *
+from bot.utils.format_data import *
 from config_reader import config
 
 router = Router()
