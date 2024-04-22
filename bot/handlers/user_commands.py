@@ -2,17 +2,30 @@ from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart
 import asyncio
+
+from aiogram.fsm.storage.base import (
+    BaseEventIsolation,
+    BaseStorage,
+    StateType,
+    StorageKey,
+)
+
 from aiogram.fsm.state import StatesGroup, State
+
 from aiogram.fsm.context import FSMContext
-from database.db_connector import *
-from database.db_connector import get_random_vacancy_for_user
-from user_registration import *
-from cities import CITIES
-from bot.utils.format_data import format_vacancy
-from config_reader import config
-from keyboards.inline import *
-from keyboards.reply import *
-from utils.states import *
+
+from bot.database.db_connector import *
+
+from .user_registration import *
+
+from bot.cities import CITIES
+
+from bot.utils import format_vacancy
+
+from bot.config_reader import config
+from bot.keyboards.inline import *
+from bot.keyboards.reply import *
+from bot.utils.states import *
 
 router = Router()
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')

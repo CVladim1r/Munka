@@ -12,7 +12,7 @@ from aiogram.contrib.fsm_storage.memory import MemoryStorage
 from aiogram.types import ParseMode
 from aiogram.dispatcher.filters import Text
 
-from user_registration import register_job_seeker, register_employer
+from bot.handlers.user_registration import register_job_seeker, register_employer
 from keyboards import get_position_keyboard, get_yes_no_keyboard, get_save_restart_keyboard, get_choose_rule, get_choose_menu_employer_buttons, get_choose_menu_user_buttons, get_location_keyboard, get_resume_button, get_citizenship_keyboard, get_send_or_dislike_resume_keyboard
 from cities import CITIES
 from bot.utils.format_data import format_vacancy

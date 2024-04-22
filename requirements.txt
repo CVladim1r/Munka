@@ -1,4 +1,5 @@
-aiogram
+aiogram-3.4.1 
+pydantic-2.5.3
 aiohttp
 asyncio
 requests
@@ -6,5 +7,4 @@ pandas
 scrapy
 aiomysql
 mysql-connector-python
-pydantic
 pydantic_settings

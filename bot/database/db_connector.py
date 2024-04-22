@@ -1,22 +1,32 @@
 import mysql.connector # type: ignore
 import logging
-from config_reader import config
 import json
 
 logging.basicConfig(level=logging.INFO)
 
-# Соединение с БДpip install mysql-connector-python
+
+DB_CONFIG={
+        'host': '127.0.0.1',
+        'user': 'root',
+        'password': 'q1q1q1q1',
+        'database': 'jfdatabase'
+}
+
+# Соединение с БД
 
 async def create_connection():
     try:
-        conn = mysql.connector.connect(**config.DB_CONFIG.get_secret_value())
+        conn = mysql.connector.connect(**DB_CONFIG)
         return conn
     except mysql.connector.Error as e:
         logging.error(f"Error connecting to MySQL: {e}")
         return None
 
-# ЗАПРОСЫ
-# ТОЛЬКО ДЛЯ ТИПА USER
+'''
+ЗАПРОСЫ
+ТОЛЬКО ДЛЯ ТИПА USER
+'''
+
 async def add_user_to_db_type_user(user_tgid, user_tgname, user_fullname, user_type):
     conn = await create_connection()
     if conn:
@@ -46,7 +56,6 @@ async def add_user_to_db_type_user(user_tgid, user_tgname, user_fullname, user_t
             conn.close()
     else:
         logging.error("Failed to connect to the database")
-
 
 async def add_user_info_to_db(user_tgid, user_fullname, user_age, user_description):
     conn = await create_connection()
@@ -100,6 +109,7 @@ async def get_user_data(user_tgid):
         finally:
             conn.close()
     return None
+
 
 
 # ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
@@ -274,6 +284,7 @@ async def update_user_desired_position(user_tgid, new_desired_position):
             conn.close()
 
 
+
 # ТОЛЬКО ДЛЯ ТИПА EMPLOYER
 async def add_user_to_db_type_employer(employer_id, employer_username, employer_name, employer_type):
     conn = await create_connection()
@@ -345,6 +356,7 @@ async def get_employer_data(employer_id):
     return None
 
 
+
 # ВАКАНСИИ
 async def mark_vacancy_as_viewed(user_tgid, vacancy_id):
     conn = await create_connection()
@@ -403,13 +415,7 @@ async def view_vacancy(user_tgid, vacancy_id):
 
 
 
-
-
-
-
-
 # Бот затычка (PLUG_BOT)
-
 async def add_user_to_db_plug_bot(message, user_id, user_name, user_username):
     conn = await create_connection()
     if conn:

@@ -1,16 +1,15 @@
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
-from keyboards.inline import *
-from keyboards.reply import *
-from database.db_connector import *
+from bot.keyboards.inline import *
+from bot.keyboards.reply import *
+from bot.database.db_connector import *
 from bot.utils.format_data import *
-from config_reader import config
+from bot.config_reader import config
 
 router = Router()
 
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
-# Позже надо разбить регистрацию
 
 async def main_menu_user(user_id, message_id):
     main_text = "Искать вакансии\n"
@@ -75,15 +74,13 @@ async def send_resume(msg: Message):
 
 @router.message(F.text == '😴')
 async def personal_sleep(msg: Message):
-    await msg.answer("Отлично! Самое время сделать перерв 😁", reply_markup=await get_choose_menu_user_buttons())
-    
+    await msg.answer("Отлично! Самое время сделать перерв 😁", reply_markup=await get_choose_menu_user_buttons()) 
 
 @router.message(F.text == '👤 Личный кабинет')
 async def personal_cabinet(msg: Message):
     user_id = msg.from_user.id
 
     user_data = await get_user_data(user_id)
-    print("User data:", user_data)  # Отладочное сообщение для проверки данных о пользователе
 
     if user_data:
         fullname = user_data.get("user_fullname", "Не указано")
@@ -110,7 +107,6 @@ async def personal_cabinet(msg: Message):
     else:
         await msg.answer("Информация о пользователе не найдена.", reply_markup=None)
 
-
 @router.message(F.text== '↩️ Назад')
 async def back_to_main_menu(msg: Message):
     user_id = msg.from_user.id
@@ -120,7 +116,6 @@ async def back_to_main_menu(msg: Message):
         await main_menu_user(user_id, name)
     else:
         await msg.answer("Информация о пользователе не найдена. Пройдите регистрацию нажав на команду /start", reply_markup=None)
-
 
 @router.message(F.text=='ℹ️ О боте')
 async def about_bot(msg: Message):

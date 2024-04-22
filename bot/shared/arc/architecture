@@ -1,4 +1,4 @@
-Схема проекта v2:
+Схема проекта:
 
 JFBot/
 │
@@ -11,67 +11,42 @@ JFBot/
 │   │   └── db_connector.py
 │   │
 │   ├── filters/
+│   │
 │   ├── handlers/
+│   │   ├── admin/
+│   │   │   ├── __init__.py
+│   │   │   └── main.py
+│   │   │
+│   │   ├── employer/
+│   │   │   ├── __init__.py
+│   │   │   └── main.py
+│   │   │
+│   │   ├── job_seeker/
+│   │   │   ├── __init__.py
+│   │   │   └── main.py
+│   │   │
+│   │   ├── __init__.py
+│   │   ├── bot_messages.py
+│   │   └── user_commands.py
+│   │
 │   ├── keyboards/
-│   ├── parser/
-│   ├── shared/
+│   │   ├── __init__.py
+│   │   ├── inline.py
+│   │   └── reply.py
+│   │
 │   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── format_data.py
+│   │   └── states.py
 │   │
 │   ├── __init__.py
 │   ├── bot.py
 │   ├── cities.py
 │   ├── config_reader.py
-│   ├── format_data.py
-│   ├── plug_bot.py
-│   ├── start_bot.py
-│   ├── unit_tests_bot.py
 │   └── user_registration.py
-│
-│
-│   
-├── parser/
-│   ├── HeadHunter/
-│   │   ├── pars-upt.py
-│   │   ├── start-parser.py
-│   │   ├── vacancies.py
-│   │   └── hh-ru.py
-│   └── main.py
 │
 ├── git
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
 └── run.py
-
-
-Схема проекта v1:
-
-JFBot/
-│
-├── bot/
-│   ├── __init__.py
-│   ├── keyboards.py
-│   └── user_registration.py
-│
-├── models/
-│   └── __init__.py
-│
-├── database/
-│   ├── __init__.py
-│   └── db_connector.py
-│
-├── data/
-│   └── vacancies.csv
-│   
-├── parser/
-│   ├── HeadHunter/
-│   │   ├── pars-upt.py
-│   │   ├── start-parser.py
-│   │   ├── vacancies.py
-│   │   └── hh-ru.py
-│   └── main.py
-│
-├── main.py
-├── config.py
-├── createDB.sql
-└── requirements.txt

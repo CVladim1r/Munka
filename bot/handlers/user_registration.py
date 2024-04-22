@@ -1,4 +1,4 @@
-from database.db_connector import add_user_to_db_type_user, add_employer_to_db
+from bot.database.db_connector import add_user_to_db_type_user, add_employer_to_db
 
 async def register_job_seeker(user_tgid, user_tgname, user_fullname):
     await add_user_to_db_type_user(user_tgid, user_tgname, user_fullname, user_type="USER")
