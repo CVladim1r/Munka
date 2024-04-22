@@ -68,7 +68,7 @@ async def update_fio(user_tgid, new_name):
         finally:
             conn.close()
 
-# Обновление ФИО пользователя
+# Обновление страны/национальности пользователя
 async def update_user_citizenship(user_tgid, new_citizenship):
     conn = await create_connection()
     if conn:
@@ -84,27 +84,9 @@ async def update_user_citizenship(user_tgid, new_citizenship):
         finally:
             conn.close()
 
-async def update_user_skills(user_tgid, new_skills):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_skills = %s WHERE user_tgid = %s",
-                           (new_skills, user_tgid))
-            conn.commit()
-            logging.info(f"User with ID {user_tgid} updated with new user_skills: {new_skills}")
-            cursor.close()
-        except mysql.connector.Error as e:
-            logging.error(f"Error updating user user_skills in database: {e}")
-        finally:
-            conn.close()
-
-
 
 
 # ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
-
-
 
 async def update_user_experience(user_tgid, new_experience):
     conn = await create_connection()
