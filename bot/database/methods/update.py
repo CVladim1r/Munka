@@ -4,6 +4,11 @@ from ..db_connector import create_connection
 import json
 
 
+
+
+# ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
+
+
 # Обновление типа пользователя
 async def update_user_type(user_tgid, new_user_type):
     conn = await create_connection()
@@ -84,10 +89,6 @@ async def update_user_citizenship(user_tgid, new_citizenship):
         finally:
             conn.close()
 
-
-
-# ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
-
 async def update_user_experience(user_tgid, new_experience):
     conn = await create_connection()
     if conn:
@@ -102,6 +103,23 @@ async def update_user_experience(user_tgid, new_experience):
             logging.error(f"Error updating user user_experience in database: {e}")
         finally:
             conn.close()
+
+
+async def update_user_name(user_tgid, new_name):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET user_what_is_your_name = %s WHERE user_tgid = %s",
+                           (new_name, user_tgid))
+            conn.commit()
+            logging.info(f"User with ID {user_tgid} updated with new user_what_is_your_name: {new_name}")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error updating user user_what_is_your_name in database: {e}")
+        finally:
+            conn.close()
+
 
 async def update_user_fullname(user_tgid, new_fullname):
     conn = await create_connection()

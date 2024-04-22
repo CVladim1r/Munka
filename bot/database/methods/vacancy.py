@@ -7,6 +7,7 @@ import json
 
 # PS - я не определился...
 # ВАКАНСИИ
+
 async def mark_vacancy_as_viewed(user_tgid, vacancy_id):
     conn = await create_connection()
     if conn:

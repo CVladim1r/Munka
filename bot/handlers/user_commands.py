@@ -14,7 +14,6 @@ from aiogram.fsm.state import StatesGroup, State
 
 from aiogram.fsm.context import FSMContext
 
-from bot.database.db_connector import *
 
 from .user_registration import *
 
@@ -26,6 +25,8 @@ from bot.config_reader import config
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
 from bot.utils.states import *
+
+from bot.database.methods import *
 
 router = Router()
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
