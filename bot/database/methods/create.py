@@ -3,7 +3,10 @@ import logging
 from ..db_connector import create_connection
 import json
 
-async def add_user_to_db_type_user(user_tgid, user_tgname, user_fullname, user_type):
+
+
+# Запрос на добавление пользовтаеля в базу данных
+async def add_user_to_db_type_user(user_tgid, user_tgname, user_tgfullname, user_type):
     conn = await create_connection()
     if conn:
         try:
@@ -17,12 +20,12 @@ async def add_user_to_db_type_user(user_tgid, user_tgname, user_fullname, user_t
             if not user_tgname.startswith('@'):
                 user_tgname = '@' + user_tgname
 
-            cursor.execute("INSERT INTO users (user_tgid, user_fullname, user_tgname, user_type) "
+            cursor.execute("INSERT INTO users (user_tgid, user_tgfullname, user_tgname, user_type) "
                            "VALUES (%s, %s, %s, %s) "
                            "ON DUPLICATE KEY UPDATE "
-                           "user_fullname=VALUES(user_fullname), user_type=VALUES(user_type), "
+                           "user_tgfullname=VALUES(user_tgfullname), user_type=VALUES(user_type), "
                            "user_tgname=IF(VALUES(user_tgname) <> '', VALUES(user_tgname), user_tgname)",
-                           (user_tgid, user_fullname, user_tgname, user_type))
+                           (user_tgid, user_tgfullname, user_tgname, user_type))
             conn.commit()
             logging.info(f"User with ID {user_tgid} added/updated in the database")
         except mysql.connector.Error as e:
@@ -35,17 +38,17 @@ async def add_user_to_db_type_user(user_tgid, user_tgname, user_fullname, user_t
 
 
 
-
-async def add_user_info_to_db(user_tgid, user_fullname, user_age, user_description):
+# Запрос на добавление пользовтаеля в базу данных
+async def add_user_info_to_db(user_tgid, user_tgfullname, user_age, user_description):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (user_tgid, user_fullname, user_age, user_description) "
+            cursor.execute("INSERT INTO users (user_tgid, user_tgfullname, user_age, user_description) "
                             "VALUES (%s, %s, %s, %s) "
-                            "ON DUPLICATE KEY UPDATE user_fullname=VALUES(user_fullname), "
+                            "ON DUPLICATE KEY UPDATE user_tgfullname=VALUES(user_tgfullname), "
                             "user_age=VALUES(user_age), user_description=VALUES(user_description)",
-                            (user_tgid, user_fullname, user_age, user_description))
+                            (user_tgid, user_tgfullname, user_age, user_description))
 
             conn.commit()
             logging.info(f"User info added to the database for user with ID {user_tgid}")
@@ -63,12 +66,16 @@ async def send_resume(user_tgid, resume):
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_desired_position = %s, user_experience = %s, "
-                           "user_experience_description = %s, user_additional_info = %s, user_skills = %s, "
-                           "user_citizenship = %s, user_what_is_your_name = %s WHERE user_tgid = %s",
-                           (resume['user_desired_position'], json.dumps(resume['user_experience']), resume['user_experience_description'],
-                            resume['user_additional_info'], resume['user_skills'], resume['user_citizenship'],
-                            resume['user_what_is_your_name'], user_tgid))
+            cursor.execute("UPDATE users SET user_profession = %s, user_experience = %s, "
+                           "user_additional_info = %s, user_fio = %s, "
+                           "user_citizenship = %s, user_desired_salary_level = %s WHERE user_tgid = %s",
+                           (resume['user_profession'], 
+                            json.dumps(resume['user_experience']), 
+                            resume['user_fio'],
+                            resume['user_additional_info'], 
+                            resume['user_citizenship'],
+                            resume['user_desired_salary_level'], 
+                            user_tgid))
             conn.commit()
             logging.info(f"Resume sent for user with ID {user_tgid}")
             cursor.close()

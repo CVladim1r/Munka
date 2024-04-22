@@ -13,7 +13,6 @@ DB_CONFIG={
 }
 
 # Соединение с БД
-
 async def create_connection():
     try:
         conn = mysql.connector.connect(**DB_CONFIG)

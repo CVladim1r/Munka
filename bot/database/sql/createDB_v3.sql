@@ -5,8 +5,9 @@ USE JFDataBase;
 -- Создание таблицы employers
 CREATE TABLE IF NOT EXISTS employers (
   employer_id int NOT NULL AUTO_INCREMENT,
-  employer_username varchar(32) DEFAULT NULL,
-  employer_fullname varchar(255) DEFAULT NULL,
+  employer_tgid int NOT NULL AUTO_INCREMENT,
+  employer_tgname varchar(32) DEFAULT NULL,
+  employer_tgfullname varchar(255) DEFAULT NULL,
   employers_company_name varchar(255) DEFAULT NULL,
   employers_description text,
   employer_type enum('EMPLOYER','USER') DEFAULT NULL,
@@ -51,7 +52,9 @@ CREATE TABLE IF NOT EXISTS users (
   user_location varchar(255) DEFAULT NULL,
   user_location_text varchar(255) DEFAULT NULL,
   user_citizenship varchar(255) DEFAULT NULL,
+  -- Желаемая профессия
   user_profession varchar(255) DEFAULT NULL,
+  -- Желаемый уровень дохода
   user_desired_salary_level varchar(255) DEFAULT NULL,
   user_experience JSON,
   user_additional_info text DEFAULT NULL,
