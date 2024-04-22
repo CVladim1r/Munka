@@ -3,6 +3,7 @@ from pydantic import SecretStr
 
 class Settings(BaseSettings):
     bot_token: SecretStr
+    DB_CONFIG: SecretStr
     model_config: SettingsConfigDict = SettingsConfigDict (
         env_file=".env",
         env_file_encoding="utf-8"

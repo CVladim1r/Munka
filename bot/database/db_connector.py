@@ -1,6 +1,6 @@
 import mysql.connector # type: ignore
 import logging
-from config import DB_CONFIG
+from config_reader import config
 import json
 
 logging.basicConfig(level=logging.INFO)
@@ -9,7 +9,7 @@ logging.basicConfig(level=logging.INFO)
 
 async def create_connection():
     try:
-        conn = mysql.connector.connect(**DB_CONFIG)
+        conn = mysql.connector.connect(**config.DB_CONFIG.get_secret_value())
         return conn
     except mysql.connector.Error as e:
         logging.error(f"Error connecting to MySQL: {e}")
