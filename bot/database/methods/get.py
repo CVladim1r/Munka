@@ -19,7 +19,7 @@ async def get_user_data(user_tgid):
             conn.close()
     return None
 
-
+# FIX IT PLS
 async def get_employer_data(employer_id):
     conn = await create_connection()
     if conn:

@@ -37,18 +37,17 @@ async def add_user_to_db_type_user(user_tgid, user_tgname, user_tgfullname, user
         logging.error("Failed to connect to the database")
 
 
-
 # Запрос на добавление пользовтаеля в базу данных
-async def add_user_info_to_db(user_tgid, user_tgfullname, user_age, user_description):
+async def add_user_info_to_db(user_tgid, user_tgfullname, user_age):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("INSERT INTO users (user_tgid, user_tgfullname, user_age, user_description) "
-                            "VALUES (%s, %s, %s, %s) "
+            cursor.execute("INSERT INTO users (user_tgid, user_tgfullname, user_age) "
+                            "VALUES (%s, %s, %s) "
                             "ON DUPLICATE KEY UPDATE user_tgfullname=VALUES(user_tgfullname), "
-                            "user_age=VALUES(user_age), user_description=VALUES(user_description)",
-                            (user_tgid, user_tgfullname, user_age, user_description))
+                            "user_age=VALUES(user_age))",
+                            (user_tgid, user_tgfullname, user_age, ))
 
             conn.commit()
             logging.info(f"User info added to the database for user with ID {user_tgid}")
@@ -59,8 +58,7 @@ async def add_user_info_to_db(user_tgid, user_tgfullname, user_age, user_descrip
             conn.close()
 
 
-
-
+# Запрос на отправку резюме соискателя в базу
 async def send_resume(user_tgid, resume):
     conn = await create_connection()
     if conn:
@@ -86,24 +84,25 @@ async def send_resume(user_tgid, resume):
 
 
 
+
+
+
 # ТОЛЬКО ДЛЯ ТИПА EMPLOYER
-async def add_user_to_db_type_employer(employer_id, employer_username, employer_name, employer_type):
+async def add_user_to_db_type_employer(employer_tgid, employer_username, employer_name, employer_type):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
             cursor.execute("INSERT INTO employers (employer_id, employer_name, employer_username, employer_type) VALUES (%s, %s, %s, %s) "
                            "ON DUPLICATE KEY UPDATE employer_name=VALUES(employer_name), employer_type=VALUES(employer_type), employer_username=IF(VALUES(employer_username) <> '', VALUES(employer_username), employer_username)",
-                           (employer_id, employer_name, employer_username, employer_type))
+                           (employer_tgid, employer_name, employer_username, employer_type))
             conn.commit()
-            logging.info(f"User with ID {employer_id} added to the database")
+            logging.info(f"User with ID {employer_tgid} added to the database")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error adding user to database: {e}")
         finally:
             conn.close()
-
-            
 
 async def add_employer_to_db(message, employer_id, employer_username, employer_name, employer_type):
     conn = await create_connection()

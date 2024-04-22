@@ -4,7 +4,7 @@ from ..db_connector import create_connection
 import json
 
 
-
+# Обновление типа пользователя
 async def update_user_type(user_tgid, new_user_type):
     conn = await create_connection()
     if conn:
@@ -19,7 +19,8 @@ async def update_user_type(user_tgid, new_user_type):
             logging.error(f"Error updating user type in database: {e}")
         finally:
             conn.close()
-
+            
+# Обновление локации (города) пользователя
 async def update_user_location(user_tgid, new_location):
     conn = await create_connection()
     if conn:
@@ -35,6 +36,7 @@ async def update_user_location(user_tgid, new_location):
         finally:
             conn.close()
 
+# Обновление возраста пользователя
 async def update_user_age(user_tgid, new_age):
     conn = await create_connection()
     if conn:
@@ -50,36 +52,23 @@ async def update_user_age(user_tgid, new_age):
         finally:
             conn.close()
 
-async def update_user_description(user_tgid, new_description):
+# Обновление ФИО пользователя
+async def update_fio(user_tgid, new_name):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_description = %s WHERE user_tgid = %s",
-                           (new_description, user_tgid))
-            conn.commit()
-            logging.info(f"User with ID {user_tgid} updated with new user_description: {new_description}")
-            cursor.close()
-        except mysql.connector.Error as e:
-            logging.error(f"Error updating user user_description in database: {e}")
-        finally:
-            conn.close()
-
-async def update_user_name(user_tgid, new_name):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_what_is_your_name = %s WHERE user_tgid = %s",
+            cursor.execute("UPDATE users SET user_fio = %s WHERE user_tgid = %s",
                            (new_name, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_tgid} updated with new user_what_is_your_name: {new_name}")
+            logging.info(f"User with ID {user_tgid} updated with new user_fio: {new_name}")
             cursor.close()
         except mysql.connector.Error as e:
-            logging.error(f"Error updating user user_what_is_your_name in database: {e}")
+            logging.error(f"Error updating user user_fio in database: {e}")
         finally:
             conn.close()
 
+# Обновление ФИО пользователя
 async def update_user_citizenship(user_tgid, new_citizenship):
     conn = await create_connection()
     if conn:
