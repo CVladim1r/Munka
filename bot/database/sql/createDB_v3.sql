@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS users (
   user_location varchar(255) DEFAULT NULL,
   user_location_text varchar(255) DEFAULT NULL,
   user_citizenship varchar(255) DEFAULT NULL,
+  user_desired_position varchar(255) DEFAULT NULL,
   -- Желаемая профессия
   user_profession varchar(255) DEFAULT NULL,
   -- Желаемый уровень дохода

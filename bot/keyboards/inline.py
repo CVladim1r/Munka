@@ -22,6 +22,53 @@ async def get_choose_rule():
     )
     return Inlinekeyboard
 
+async def get_change_age():
+    Inlinekeyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Изменить", callback_data="change_age"),
+                InlineKeyboardButton(text="Оставить", callback_data="im_little")
+            ]
+        ]
+    )
+    return Inlinekeyboard
+
+async def get_location_keyboard():
+    Inlinekeyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Питер", callback_data="spb"),
+                InlineKeyboardButton(text="Москва", callback_data="msk")
+            ],
+            [
+                InlineKeyboardButton(text="Другое", callback_data="other_location")
+            ]
+        ]
+    )
+    return Inlinekeyboard
+
+async def get_citizenship_keyboard():
+    Inlinekeyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="РФ", callback_data="citizen_Russian_Federation"),
+                InlineKeyboardButton(text="Другое", callback_data="other_citizen")
+            ]
+        ]
+    )
+    return Inlinekeyboard
+
+async def get_employment_keyboard():
+    Inlinekeyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Полная", callback_data="full_employment"),
+                InlineKeyboardButton(text="Частичная", callback_data="part-time_employment")
+            ]
+        ]
+    )
+    return Inlinekeyboard
+
 # async def get_location_keyboard():
 #     keyboard = InlineKeyboardMarkup(
 #         inline_keyboard=[

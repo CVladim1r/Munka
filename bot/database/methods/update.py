@@ -151,7 +151,20 @@ async def update_user_desired_position(user_tgid, new_desired_position):
         finally:
             conn.close()
 
-
+async def update_user_desired_salary_level(user_tgid, new_desired_salary_level):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET user_desired_salary_level = %s WHERE user_tgid = %s",
+                           (new_desired_salary_level, user_tgid))
+            conn.commit()
+            logging.info(f"User with ID {user_tgid} updated with new desired position: {new_desired_salary_level}")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error updating user desired position in database: {e}")
+        finally:
+            conn.close()
 
 
 

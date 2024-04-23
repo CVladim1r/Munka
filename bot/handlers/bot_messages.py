@@ -1,7 +1,6 @@
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
 
-
 from bot.keyboards.inline import *
 
 from bot.keyboards.reply import *
@@ -14,10 +13,7 @@ from bot.config_reader import config
 
 from bot.database.methods import *
 
-
-
 router = Router()
-
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
 
@@ -96,6 +92,10 @@ async def personal_cabinet(msg: Message):
         fullname = user_data.get("user_fullname", "Не указано")
         age = user_data.get("user_age", "Не указан")
         location = user_data.get("user_location", "Не указано")
+        citizenship = user_data.get("user_citizenship", "Не указано")
+        desired_position = user_data.get("user_desired_position", "Не указано")
+        desired_salary = user_data.get("user_desired_salary_level", "Не указано")
+        employment_type = user_data.get("user_employment_type", "Не указано")
         skills = user_data.get("user_skills", "Не указано")
         experience = user_data.get("user_experience", [])
 
@@ -104,18 +104,25 @@ async def personal_cabinet(msg: Message):
             for exp in experience:
                 if isinstance(exp, dict):
                     company_name = exp.get("company_name", "Не указано")
-                    exp_description = exp.get("description", "Не указано")
-                    experience_text += f"Место работы: {company_name}\nОписание: {exp_description}\n\n"
+                    exp_period = exp.get("experience_period", "Не указано")
+                    exp_position = exp.get("experience_position", "Не указано")
+                    exp_duties = exp.get("experience_duties", "Не указано")
+                    experience_text += f"Место работы: {company_name}\nПериод: {exp_period}\nДолжность: {exp_position}\nОбязанности: {exp_duties}\n\n"
                 else:
                     experience_text = "Нет данных об опыте работы"
         else:
             experience_text = "Нет данных об опыте работы"
 
-        user_info_text = f"ФИО: {fullname}\nВозраст: {age}\nМестоположение: {location}\nОсобенные навыки: {skills}\n\nОпыт работы:\n{experience_text}"
+        user_info_text = f"ФИО: {fullname}\nВозраст: {age}\nМестоположение: {location}\nГражданство: {citizenship}\nЖелаемая должность: {desired_position}\nЖелаемая зарплата: {desired_salary}\nЖелаемая занятость: {employment_type}\nОсобенные навыки: {skills}\n\nОпыт работы:\n{experience_text}"
 
         await msg.answer(f'Вот так будет выглядеть твоя анкета для работодателя:\n\n{user_info_text}', reply_markup=await get_resume_button())
     else:
         await msg.answer("Информация о пользователе не найдена.", reply_markup=None)
+
+
+
+
+
 
 @router.message(F.text== '↩️ Назад')
 async def back_to_main_menu(msg: Message):

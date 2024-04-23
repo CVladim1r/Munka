@@ -18,11 +18,11 @@ async def get_send_or_dislike_resume_keyboard():
 finReg = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="✅Подтвердить")
+            KeyboardButton(text="✅ Подтвердить")
         ]
     ]
 )
-
+'''
 async def get_location_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
@@ -36,23 +36,26 @@ async def get_location_keyboard():
         ]
     )
     return keyboard
-
+'''
 async def get_position_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
             [
-                KeyboardButton(text="Повар"),
-                KeyboardButton(text="Официант")
+                KeyboardButton(text="Официант"),
+                KeyboardButton(text="Бариста")
             ],
             [
-                KeyboardButton(text="Бариста"),
-                KeyboardButton(text="Другое")
+                KeyboardButton(text="Бармен"),
+                KeyboardButton(text="Администратор")
+            ],
+            [
+                KeyboardButton(text="Повар"),
             ]
         ],
         resize_keyboard=True
     )
     return keyboard
-
+'''
 async def get_citizenship_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[
@@ -68,7 +71,7 @@ async def get_citizenship_keyboard():
         
         resize_keyboard=True)
     return keyboard
-
+'''
 async def get_yes_no_keyboard():
     keyboard = ReplyKeyboardMarkup(
         keyboard=[

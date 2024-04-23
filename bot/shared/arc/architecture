@@ -19,11 +19,13 @@ JFBot/
 │   │   │
 │   │   ├── employer/
 │   │   │   ├── __init__.py
-│   │   │   └── main.py
+│   │   │   ├── registration_employer.py
+│   │   │   └── main_employer.py
 │   │   │
 │   │   ├── job_seeker/
 │   │   │   ├── __init__.py
-│   │   │   └── main.py
+│   │   │   ├── registration_job_seeker.py
+│   │   │   └── main_job_seeker.py
 │   │   │
 │   │   ├── __init__.py
 │   │   ├── bot_messages.py
