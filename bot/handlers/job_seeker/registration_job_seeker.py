@@ -1,7 +1,7 @@
 import asyncio
 import json
 import os
-
+import aiogram
 from aiogram import Router, F, Bot, types
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart
@@ -13,8 +13,6 @@ from aiogram.fsm.storage.base import (
     StateType,
     StorageKey,
 )
-from aiogram.exceptions import InvalidHTTPResponse
-from aiogram.utils.exceptions import InvalidHTTPResponse
 from bot.cities import CITIES
 from bot.utils import format_vacancy
 from bot.config_reader import config
@@ -23,6 +21,7 @@ from bot.utils.states import *
 from bot.database.methods import *
 
 from bot.handlers.bot_messages import *
+
 
 
 async def register_job_seeker(user_tgid, user_tgname, user_fullname, state: FSMContext):
@@ -329,34 +328,32 @@ async def process_additional_info_details(msg: Message, state: FSMContext):
     await state.set_state(UserForm.photo_upload)
     await msg.answer("Чего-то не хватает. Соли? Перца? Фотографии! Ждем твое фото 🔥", reply_markup=rmk)
 
+
+
+
+
 @router.message(UserForm.photo_upload)
-async def photo_upload(message: Message, state: FSMContext):
+async def photo_upload(message: types.Message, state: FSMContext):
     if message.photo:
-        photo = message.photo[-1]
-        photo_id = photo.file_id
-        file = await bot.get_file(photo_id)
-        
-        # Constructing the photo path
-        username = message.from_user.username
-        photo_filename = f"{photo_id}.jpg"  # You can adjust the file extension as needed
-        photo_path = f"img/{username}/{photo_filename}"
-
-        # Creating the directory structure
-        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
-
-        # Downloading the photo
         try:
-            await bot.download_file(photo.file_id, photo_path)
-        except aiogram.utils.exceptions.InvalidHTTPResponse as e:
-            # If the file is not found, handle the exception
-            await message.answer("Ошибка загрузки фотографии. Пожалуйста, попробуйте еще раз.")
-            return
-
-        # Updating the photo path in the user's state data
-        await state.update_data(photo_path=photo_path)
-        await message.answer("Фотография успешно загружена!")
+            file_info = await bot.get_file(message.photo[-1].file_id)
+            file_path = file_info.file_path
+            file_name = file_path.split('/')[-1]
+            await bot.download_file(file_path, file_name)
+            await state.update_data(photo_path=file_name)
+            await message.answer("Фотография успешно загружена!")
+        except aiogram.client.errors.TelegramAPIError as e:
+            if e.error_code == 404:
+                await message.answer("Файл не найден. Пожалуйста, попробуйте загрузить его еще раз.")
+                return
+            else:
+                raise e
     else:
         await message.answer("Пожалуйста, загрузите фотографию.")
+
+
+
+
 
 @router.message(UserForm.resume_check)
 async def process_resume_check(msg: Message, state: FSMContext):
