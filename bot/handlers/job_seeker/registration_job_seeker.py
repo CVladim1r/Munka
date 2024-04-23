@@ -1,5 +1,6 @@
 import asyncio
 import json
+import os
 
 from aiogram import Router, F, Bot, types
 from aiogram.types import Message, CallbackQuery
@@ -12,8 +13,8 @@ from aiogram.fsm.storage.base import (
     StateType,
     StorageKey,
 )
-
-
+from aiogram.exceptions import InvalidHTTPResponse
+from aiogram.utils.exceptions import InvalidHTTPResponse
 from bot.cities import CITIES
 from bot.utils import format_vacancy
 from bot.config_reader import config
@@ -227,7 +228,6 @@ async def process_user_desired_salary_level(msg: Message, state: FSMContext):
 
 @router.callback_query(lambda c: c.data == 'full_employment' or c.data == 'part-time_employment')
 async def process_desired_position(callback_query: CallbackQuery, state: FSMContext):
-    # Get the message associated with the callback query
     message = callback_query.message
     if callback_query.data == 'full_employment':
         employment = 'full_employment'
@@ -303,13 +303,61 @@ async def process_experience_another(msg: Message, state: FSMContext):
         }
         # Сохранение опыта работы
         await update_user_experience(msg.from_user.id, experience_data)
-        await state.set_state(UserForm.resume_check)
-        await msg.answer("Подтвердите окончание регистрации", reply_markup=finReg)
+        await state.set_state(UserForm.additional_info)
+        await msg.answer("Есть навыки? Напиши их!", reply_markup=finReg)
     else:
         await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=await get_yes_no_keyboard())
 
 
-@router.message(UserForm.resume_check)
+
+@router.message(UserForm.additional_info)
+async def process_additional_info(msg: Message, state: FSMContext):
+    if msg.text.lower() == 'да':
+        await state.set_state(UserForm.additional_info_details)
+        await msg.answer("Здесь ты можешь рассказать о своих навыках и умениях", reply_markup=rmk)
+    elif msg.text.lower() == 'нет':
+        await state.set_state(UserForm.photo_upload)
+        await msg.answer("Чего-то не хватает. Соли? Перца? Фотографии! Ждем твое фото 🔥", reply_markup=rmk)
+    else:
+        await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=await get_yes_no_keyboard())
+
+
+@router.message(UserForm.additional_info_details)
+async def process_additional_info_details(msg: Message, state: FSMContext):
+    additional_info = msg.text
+    await state.update_data(additional_info=additional_info)
+    await state.set_state(UserForm.photo_upload)
+    await msg.answer("Чего-то не хватает. Соли? Перца? Фотографии! Ждем твое фото 🔥", reply_markup=rmk)
+
+@router.message(UserForm.photo_upload)
+async def photo_upload(message: Message, state: FSMContext):
+    if message.photo:
+        photo = message.photo[-1]
+        photo_id = photo.file_id
+        file = await bot.get_file(photo_id)
+        
+        # Constructing the photo path
+        username = message.from_user.username
+        photo_filename = f"{photo_id}.jpg"  # You can adjust the file extension as needed
+        photo_path = f"img/{username}/{photo_filename}"
+
+        # Creating the directory structure
+        os.makedirs(os.path.dirname(photo_path), exist_ok=True)
+
+        # Downloading the photo
+        try:
+            await bot.download_file(photo.file_id, photo_path)
+        except aiogram.utils.exceptions.InvalidHTTPResponse as e:
+            # If the file is not found, handle the exception
+            await message.answer("Ошибка загрузки фотографии. Пожалуйста, попробуйте еще раз.")
+            return
+
+        # Updating the photo path in the user's state data
+        await state.update_data(photo_path=photo_path)
+        await message.answer("Фотография успешно загружена!")
+    else:
+        await message.answer("Пожалуйста, загрузите фотографию.")
+
 @router.message(UserForm.resume_check)
 async def process_resume_check(msg: Message, state: FSMContext):
     await state.update_data(resume_check=msg.text)
@@ -319,15 +367,24 @@ async def process_resume_check(msg: Message, state: FSMContext):
              f"Гражданство: {data['citizenship']}\n" \
              f"Желаемая позиция: {data['desired_position']}\n" \
              f"Опыт работы:\n"
+    experience_data = {
+            "company_name": data.get("company_name"),\
+            "experience_period": data.get("experience_period"),\
+            "experience_position": data.get("experience_position"),\
+            "experience_duties": data.get("experience_duties")\
+        }
+    resume += str(experience_data)
     
-    for experience in data.get('experience', []):
-        resume += f"- Название компании: {experience['company_name']}\n" \
-                  f"  Период работы: {experience['experience_period']}\n" \
-                  f"  Должность: {experience['experience_position']}\n" \
-                  f"  Обязанности: {experience['experience_duties']}\n\n"
+    desired_salary = data.get('user_desired_salary_level', 'Не указано')
+    employment_type = data.get('user_employment_type', 'Не указано')
     
-    resume += f"Желаемая зарплата: {data['user_desired_salary_level']}\n" \
-              f"Желаемая занятость: {data['user_employment_type']}\n"
+    resume += f"Желаемая зарплата: {desired_salary}\n" \
+              f"Желаемая занятость: {employment_type}\n"
+    
+    # Добавляем путь к фотографии в текст резюме, если он есть
+    photo_path = data.get("photo_path")
+    if photo_path:
+        resume += f"Фото: {photo_path}\n"
     
     await msg.answer(f"Ваше резюме:\n\n{resume}\n\nЖелаете что-нибудь подправить или начать заново?", 
                      reply_markup=await get_save_restart_keyboard())

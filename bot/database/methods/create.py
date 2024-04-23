@@ -59,28 +59,35 @@ async def add_user_info_to_db(user_tgid, user_tgfullname, user_age):
 
 
 # Запрос на отправку резюме соискателя в базу
-async def send_resume(user_tgid, resume):
+async def send_resume(user_id, resume_data):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
+            # Extracting resume data
+            profession = resume_data.get('user_profession', 'Не указано')
+            experience = json.dumps(resume_data.get('user_experience', []))
+            fio = resume_data.get('user_fio', 'Не указано')
+            additional_info = resume_data.get('user_additional_info', 'Не указано')
+            citizenship = resume_data.get('user_citizenship', 'Не указано')
+            desired_salary_level = resume_data.get('user_desired_salary_level', 'Не указано')
+
+            # Updating database with resume data
             cursor.execute("UPDATE users SET user_profession = %s, user_experience = %s, "
                            "user_additional_info = %s, user_fio = %s, "
                            "user_citizenship = %s, user_desired_salary_level = %s WHERE user_tgid = %s",
-                           (resume['user_profession'], 
-                            json.dumps(resume['user_experience']), 
-                            resume['user_fio'],
-                            resume['user_additional_info'], 
-                            resume['user_citizenship'],
-                            resume['user_desired_salary_level'], 
-                            user_tgid))
+                           (profession, experience, additional_info, fio, citizenship,
+                            desired_salary_level, user_id))
             conn.commit()
-            logging.info(f"Resume sent for user with ID {user_tgid}")
+            logging.info(f"Resume sent for user with ID {user_id}")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error sending resume for user in database: {e}")
         finally:
             conn.close()
+
+
+
 
 
 

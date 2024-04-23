@@ -43,5 +43,10 @@ class UserForm(StatesGroup):
     age = State()
     fio = State()
 
+    photo_upload = State()
+
+    additional_info = State()
+    additional_info_details = State()
+
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()
