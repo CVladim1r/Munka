@@ -59,27 +59,30 @@ async def add_user_info_to_db(user_tgid, user_tgfullname, user_age):
 
 
 # Запрос на отправку резюме соискателя в базу
-async def send_resume(user_id, resume_data):
+async def send_resume(user_tgid, resume_data):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            # Extracting resume data
-            profession = resume_data.get('user_profession', 'Не указано')
-            experience = json.dumps(resume_data.get('user_experience', []))
-            fio = resume_data.get('user_fio', 'Не указано')
-            additional_info = resume_data.get('user_additional_info', 'Не указано')
-            citizenship = resume_data.get('user_citizenship', 'Не указано')
-            desired_salary_level = resume_data.get('user_desired_salary_level', 'Не указано')
 
-            # Updating database with resume data
-            cursor.execute("UPDATE users SET user_profession = %s, user_experience = %s, "
-                           "user_additional_info = %s, user_fio = %s, "
-                           "user_citizenship = %s, user_desired_salary_level = %s WHERE user_tgid = %s",
-                           (profession, experience, additional_info, fio, citizenship,
-                            desired_salary_level, user_id))
+            desired_position = resume_data.get('desired_position', 'Не указано')
+            fio = resume_data.get('fio', 'Не указано')
+            age = resume_data.get('age', 'Не указано')
+            location = resume_data.get('location_text', 'Не указано')
+            citizenship = resume_data.get('citizenship', 'Не указано')
+            desired_salary_level = resume_data.get('user_desired_salary_level', 'Не указано')
+            user_employment_type = resume_data.get('user_employment_type', 'Не указано')
+
+            experience = json.dumps(resume_data.get('user_experience', []))
+            additional_info = resume_data.get('user_additional_info', 'Не указано')
+
+            cursor.execute("UPDATE users SET user_desired_position = %s, user_fio = %s, user_age = %s"
+                           "user_location_text = %s, user_citizenship = %s, user_employment_type = %s, user_experience = %s,"
+                           "user_additional_info = %s, user_desired_salary_level = %s WHERE user_tgid = %s",
+                           (desired_position, fio, age, location, citizenship, user_employment_type, experience, additional_info,  
+                            desired_salary_level, user_tgid))
             conn.commit()
-            logging.info(f"Resume sent for user with ID {user_id}")
+            logging.info(f"Resume sent for user with ID {user_tgid}")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error sending resume for user in database: {e}")

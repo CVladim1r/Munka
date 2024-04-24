@@ -69,7 +69,7 @@ async def update_fio(user_tgid, new_name):
             cursor.execute("UPDATE users SET user_fio = %s WHERE user_tgid = %s",
                            (new_name, user_tgid))
             conn.commit()
-            logging.info(f"User with ID {user_tgid} updated with new user_fio: {new_name}")
+            logging.info(f"------------User with ID {user_tgid} updated with new user_fio: {new_name}")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error updating user user_fio in database: {e}")
@@ -190,6 +190,20 @@ async def update_user_additional_info(user_tgid, new_user_additional_info):
             conn.close()
 
 
+async def update_user_photo_path(user_tgid, new_user_photo_pat):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET user_photo_path = %s WHERE user_tgid = %s",
+                           (new_user_photo_pat, user_tgid))
+            conn.commit()
+            logging.info(f"User with ID {user_tgid} updated with new desired position: {new_user_photo_pat}")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error updating user desired position in database: {e}")
+        finally:
+            conn.close()
 
 
 

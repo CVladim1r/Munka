@@ -118,34 +118,34 @@ async def personal_sleep(msg: Message):
 async def personal_cabinet(msg: Message):
     user_id = msg.from_user.id
 
-    user_data = await get_user_data(user_id)
-
     path_to_photo = f'img/{msg.from_user.username}\\photo.jpg'
-
 
     await msg.answer("Вот как выглядит твое резюме:")
     data = await get_user_data(user_id)
-
-
-    resume = f"ФИО: {data['user_fio']}\n" \
-            f"Гражданство: {data['user_citizenship']}\n" \
-            f"Желаемая позиция: {data['user_desired_position']}\n" \
-            f"Опыт работы:\n"
-    experience_data = {
-            "company_name": data.get("user_company_name"),\
-            "experience_period": data.get("experience_period"),\
-            "experience_position": data.get("experience_position"),\
-            "experience_duties": data.get("experience_duties")\
-        }
-    resume += str(experience_data)
-    desired_salary = data.get('user_desired_salary_level', 'Не указано')
-    employment_type = data.get('user_employment_type', 'Не указано')
-    resume += f"Желаемая зарплата: {desired_salary}\n" \
-            f"Желаемая занятость: {employment_type}\n"
-
+    
+    resume = f"<b>{data['user_desired_position']}</b>\n" \
+             f"<u>{data['user_fio']}</u>\n" \
+             f"Возраст: {data['user_age']}\n" \
+             f"Город: {data['user_location_text']}\n" \
+             f"Гражданство: {data['user_citizenship']}\n" \
+             f"Желаемый уровень з/п: {data['user_desired_salary_level']}\n" \
+             f"Занятость: {data.get('user_employment_type', 'Не указано')}\n\n" \
+             f"<i>Опыт работы:</i>\n" \
+             
+    experience = json.loads(data['user_experience'])
+    if isinstance(experience, dict):  # Проверяем, что опыт работы представлен словарем (ихвильних)
+        resume += f"<b>{experience.get('company_name', 'Не указано')}</b>\n" \
+                  f"Период работы: {experience.get('experience_period', 'Не указано')}\n" \
+                  f"Должность: {experience.get('experience_position', 'Не указано')}\n" \
+                  f"Основные обязанности: {experience.get('experience_duties', 'Не указано')}\n" \
+                  
+    else:
+        resume += "Не указано\n"
+    
+    additional_info = data.get('user_additional_info', 'Не указано')
+    resume += f"<i>Дополнительная информация:</i> {additional_info}\n"
+    
     await bot.send_photo(msg.chat.id, photo=types.FSInputFile(path_to_photo), caption=resume, reply_markup=await get_save_restart_keyboard())
-
-
 
 @router.message(F.text== '↩️ Назад')
 async def back_to_main_menu(msg: Message):

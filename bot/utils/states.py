@@ -21,7 +21,7 @@ class UserForm(StatesGroup):
     resume_start = State()
 
     resume_edit = State()
-
+    experience_data = State()
     experience_details = State()
     experience_another = State()
     experience_description = State()
@@ -33,7 +33,7 @@ class UserForm(StatesGroup):
     dislike_resume = State()
 
     user_desired_salary_level = State()
-
+    user_employment_type = State()
     user_fullname = State()
     user_tgid = State()
     user_tgname = State()

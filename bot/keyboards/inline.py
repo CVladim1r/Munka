@@ -7,7 +7,8 @@ async def get_save_restart_keyboard():
         inline_keyboard=[
             [
                 InlineKeyboardButton(text="Сохранить", callback_data="save_resume"),
-                InlineKeyboardButton(text="Начать заново", callback_data="restart_resume")
+                InlineKeyboardButton(text="Начать заново", callback_data="restart_resume"),
+                InlineKeyboardButton(text="Изменить", callback_data="edit_resume")
             ]
         ]
     )
