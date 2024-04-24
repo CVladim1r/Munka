@@ -498,6 +498,7 @@ async def proc_con(callback_query: CallbackQuery, state: FSMContext):
         await process_resume_confirmation(callback_query.message, state)
         
     await state.clear()
+    
 
 
 async def restart_resume(msg: Message, state: FSMContext):

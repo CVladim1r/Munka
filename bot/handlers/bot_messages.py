@@ -1,5 +1,35 @@
 from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
+import asyncio
+import json
+import os
+import aiogram
+from aiogram import Router, F, Bot, types
+from aiogram.types import Message, CallbackQuery
+from aiogram.filters import Command, CommandStart
+from aiogram.methods.send_photo import SendPhoto
+
+
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.storage.base import (
+    BaseEventIsolation,
+    BaseStorage,
+    StateType,
+    StorageKey,
+)
+from bot.cities import CITIES
+from bot.utils import format_vacancy
+from bot.config_reader import config
+from bot.keyboards import *
+from bot.utils.states import *
+from bot.database.methods import *
+
+from bot.handlers.bot_messages import *
+
+from aiogram.types.input_file import InputFile
+from bot.utils.states import *
 
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
@@ -90,33 +120,32 @@ async def personal_cabinet(msg: Message):
 
     user_data = await get_user_data(user_id)
 
+    path_to_photo = f'img/{msg.from_user.username}\\photo.jpg'
 
 
+    await msg.answer("Вот как выглядит твое резюме:")
+    data = await get_user_data(user_id)
 
 
+    resume = f"ФИО: {data['user_fio']}\n" \
+            f"Гражданство: {data['user_citizenship']}\n" \
+            f"Желаемая позиция: {data['user_desired_position']}\n" \
+            f"Опыт работы:\n"
+    experience_data = {
+            "company_name": data.get("user_company_name"),\
+            "experience_period": data.get("experience_period"),\
+            "experience_position": data.get("experience_position"),\
+            "experience_duties": data.get("experience_duties")\
+        }
+    resume += str(experience_data)
+    desired_salary = data.get('user_desired_salary_level', 'Не указано')
+    employment_type = data.get('user_employment_type', 'Не указано')
+    resume += f"Желаемая зарплата: {desired_salary}\n" \
+            f"Желаемая занятость: {employment_type}\n"
+
+    await bot.send_photo(msg.chat.id, photo=types.FSInputFile(path_to_photo), caption=resume, reply_markup=await get_save_restart_keyboard())
 
 
-
-
-
-
-
-
-    if user_data:
-        fullname = user_data.get("user_fio", "Не указано")
-        age = user_data.get("user_age", "Не указан")
-        location = user_data.get("user_location_text", "Не указано")
-        citizenship = user_data.get("user_citizenship", "Не указано")
-        desired_position = user_data.get("user_desired_position", "Не указано")
-        desired_salary = user_data.get("user_desired_salary_level", "Не указано")
-        employment_type = user_data.get("user_employment_type", "Не указано")
-        experience = user_data.get("user_experience", [])
-        print(experience)
-        user_info_text = f"ФИО: {fullname}\nВозраст: {age}\nМестоположение: {location}\nГражданство: {citizenship}\nЖелаемая должность: {desired_position}\nЖелаемая зарплата: {desired_salary}\nЖелаемая занятость: {employment_type}\nОсобенные навыки:\n\nОпыт работы:\n{experience}"
-
-        await msg.answer(f'Вот так будет выглядеть твоя анкета для работодателя:\n\n{user_info_text}', reply_markup=await get_resume_button())
-    else:
-        await msg.answer("Информация о пользователе не найдена.", reply_markup=None)
 
 @router.message(F.text== '↩️ Назад')
 async def back_to_main_menu(msg: Message):

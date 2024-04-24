@@ -89,7 +89,8 @@ CREATE TABLE IF NOT EXISTS viewed_vacancies (
 );
 
 CREATE TABLE IF NOT EXISTS `plug_users` (
-  `user_id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `id` int NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  `user_id` bigint NOT NULL,
   `user_username` varchar(255) UNIQUE,
   `user_name` varchar(255)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
