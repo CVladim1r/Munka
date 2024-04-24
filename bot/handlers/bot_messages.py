@@ -2,16 +2,15 @@ from aiogram import Router, F, Bot
 from aiogram.types import Message, CallbackQuery
 
 from bot.keyboards.inline import *
-
 from bot.keyboards.reply import *
 
 from bot.database.db_connector import *
+from bot.database.methods import *
 
 from bot.utils.format_data import *
 
 from bot.config_reader import config
 
-from bot.database.methods import *
 
 router = Router()
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')

@@ -156,7 +156,6 @@ async def process_location(msg: Message, state: FSMContext):
     await msg.answer("Как к тебе обращаться? (Эта информация скрыта от остальных пользователей)", reply_markup=rmk)
 '''
 
-
 # Скипаем вопрос "Как обращаться к тебе?" 
 '''
 @router.message(UserForm.user_what_is_your_name)
@@ -179,7 +178,6 @@ async def resume_start(msg: Message, state: FSMContext):
     await state.set_state(UserForm.citizenship)
 '''
     
-
 # Наши Солевые и Московские друзья :)
 @router.callback_query(lambda c: c.data == 'citizen_Russian_Federation')
 async def process_citizen_Russian_Federation(callback_query: CallbackQuery, state: FSMContext):
@@ -201,6 +199,7 @@ async def change_other_citizen(callback_query: CallbackQuery, state: FSMContext)
     data['citizenship'] = callback_query.message.text
     await state.set_state(UserForm.citizenship)
 
+# Выбор должности
 @router.message(UserForm.citizenship)
 async def process_citizenship(msg: Message, state: FSMContext):
     data = await state.get_data()
@@ -208,7 +207,7 @@ async def process_citizenship(msg: Message, state: FSMContext):
     await msg.answer("Выбери желаемую должность:", reply_markup=await get_position_keyboard())
     await state.set_state(UserForm.desired_position)
 
-
+# Предпочтиаемая зарплата
 @router.message(UserForm.desired_position)
 async def process_desired_position(msg: Message, state: FSMContext):
     await state.update_data(desired_position=msg.text)
@@ -217,7 +216,7 @@ async def process_desired_position(msg: Message, state: FSMContext):
     await state.set_state(UserForm.user_desired_salary_level)
     await msg.answer("Какую зарплату ты бы хотел получать?\nНапример: 50 000", reply_markup=rmk)
 
-
+# Занятость соискателя (Полная или частичная)
 @router.message(UserForm.user_desired_salary_level)
 async def process_user_desired_salary_level(msg: Message, state: FSMContext):
     await state.update_data(user_desired_salary_level=msg.text)
@@ -225,6 +224,7 @@ async def process_user_desired_salary_level(msg: Message, state: FSMContext):
     await update_user_desired_salary_level(msg.from_user.id, data['user_desired_salary_level'])
     await msg.answer("Какая занятость тебя интересует ?", reply_markup=await get_employment_keyboard())
 
+# Выбор и отправка занятости , а так же вопрос опыте работы
 @router.callback_query(lambda c: c.data == 'full_employment' or c.data == 'part-time_employment')
 async def process_desired_position(callback_query: CallbackQuery, state: FSMContext):
     message = callback_query.message
@@ -233,22 +233,13 @@ async def process_desired_position(callback_query: CallbackQuery, state: FSMCont
     else:
         employment = 'part-time_employment'
 
-    # Update the state data with the desired position
     await state.update_data(desired_position=message.text)
-
-    # Update the user's desired position
     await update_user_desired_position(callback_query.from_user.id, employment)
 
-    # Set the next state and send a message
     await state.set_state(UserForm.work_experience)
     await message.answer("Был ли у тебя опыт работы?", reply_markup=await get_position_keyboard())
 
-
-
-
-
-
-
+# proc_experience, распрашиваем про опыт если есть, либо скпиаем если нет :(
 @router.message(UserForm.work_experience)
 async def proc_experience(msg: Message, state: FSMContext):
     if msg.text.lower() == 'да':
@@ -261,18 +252,21 @@ async def proc_experience(msg: Message, state: FSMContext):
     else:
         await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=rmk)
 
+# Сохраняем данные о названии Компании и задаем вопрос про период работы
 @router.message(UserForm.experience_details)
 async def process_experience_details(msg: Message, state: FSMContext):
     await state.update_data(company_name=msg.text)
     await state.set_state(UserForm.experience_period)
     await msg.answer("Введите период работы в формате: 11.2020-09.2022", reply_markup=rmk)
 
+# Сохраняем данные о периоде работы и задаем вопрос про должность
 @router.message(UserForm.experience_period)
 async def process_experience_period(msg: Message, state: FSMContext):
     await state.update_data(experience_period=msg.text)
     await state.set_state(UserForm.experience_position)
     await msg.answer("Какую должность ты занимал?", reply_markup=rmk)
 
+# Сохраняем данные о должности и задаем вопрос про опыт в опыте?? Вот это игра слов, вот это я молодец )))
 @router.message(UserForm.experience_position)
 async def process_experience_position(msg: Message, state: FSMContext):
     await state.update_data(experience_position=msg.text)
@@ -280,7 +274,7 @@ async def process_experience_position(msg: Message, state: FSMContext):
     await msg.answer("Расскажи, какие у тебя были обязанности на этой работе? Старайся отвечать на этот вопрос максимально кратко и лаконично, при этом не упуская главной сути", reply_markup=rmk)
     await msg.answer("Например: Я варил для моих посетителей – котиков, самое лучшее молоко, с пенкой. А в конце смены, я подметал полы от следов лапок, и вел учет, сколько кошачьей мяты поступило в кассу, а сколько было потрачено", reply_markup=rmk)
 
-
+# Сохраняем данные о должности и задаем вопрос про опыт в опыте?? Вот это игра слов, вот это я молодец )))
 @router.message(UserForm.experience_duties)
 async def process_experience_duties(msg: Message, state: FSMContext):
     await state.update_data(experience_duties=msg.text)
