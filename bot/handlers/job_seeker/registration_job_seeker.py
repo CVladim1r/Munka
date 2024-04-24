@@ -5,6 +5,9 @@ import aiogram
 from aiogram import Router, F, Bot, types
 from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart
+from aiogram.methods.send_photo import SendPhoto
+
+
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.storage.base import (
@@ -22,7 +25,7 @@ from bot.database.methods import *
 
 from bot.handlers.bot_messages import *
 
-
+from aiogram.types.input_file import InputFile
 
 async def register_job_seeker(user_tgid, user_tgname, user_fullname, state: FSMContext):
     """
@@ -283,6 +286,7 @@ async def process_experience_duties(msg: Message, state: FSMContext):
     await state.set_state(UserForm.experience_another)
     await msg.answer("Был ли у вас другой опыт работы?", reply_markup=await get_yes_no_keyboard())
 
+# process_experience_another
 @router.message(UserForm.experience_another)
 async def process_experience_another(msg: Message, state: FSMContext):
     if msg.text.lower() == 'да':
@@ -303,8 +307,7 @@ async def process_experience_another(msg: Message, state: FSMContext):
     else:
         await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=await get_yes_no_keyboard())
 
-
-
+# process_additional_info
 @router.message(UserForm.additional_info)
 async def process_additional_info(msg: Message, state: FSMContext):
     if msg.text.lower() == 'да':
@@ -316,36 +319,135 @@ async def process_additional_info(msg: Message, state: FSMContext):
     else:
         await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=await get_yes_no_keyboard())
 
-
+# process_additional_info_details
 @router.message(UserForm.additional_info_details)
 async def process_additional_info_details(msg: Message, state: FSMContext):
     additional_info = msg.text
     await state.update_data(additional_info=additional_info)
     await state.set_state(UserForm.photo_upload)
-    await msg.answer("Чего-то не хватает. Соли? Перца? Фотографии! Ждем твое фото 🔥", reply_markup=rmk)
+    await msg.answer("Чего-то не хватает. Соли? Перца? Фотографии! Ждем твое фото 🔥", reply_markup=await get_skip_button())
 
 
 
+# Выбор должности
+@router.message(UserForm.user_additional_info)
+async def process_user_additional_info(msg: Message, state: FSMContext):
+    data = await state.get_data()
+    await update_user_additional_info(msg.from_user.id, data['user_additional_info'])
+    await msg.answer("Хочешь ли ты добавить дополнительную информацию информацию о себе?", reply_markup=await get_position_keyboard())
+    await state.set_state(UserForm.desired_position)
 
 
+@router.callback_query(lambda c: c.data == 'skip')
+async def skip_photo(callback_query: CallbackQuery, state: FSMContext):
+    await callback_query.answer()
+    await callback_query.message.answer("Хочешь ли ты добавить дополнительную информацию информацию о себе?", reply_markup=rmk)
+    data = await state.get_data()
+    data['citizenship'] = callback_query.message.text
+    await state.set_state(UserForm.citizenship)
+
+
+'''
+# Отправка фото на сервер
 @router.message(UserForm.photo_upload)
-async def photo_upload(message: types.Message, state: FSMContext):
-    if message.photo:
+async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
+    if msg.photo:
         try:
-            file_info = await bot.get_file(message.photo[-1].file_id)
+            username = msg.from_user.username
+            user_folder = f"img/{username}"
+            os.makedirs(user_folder, exist_ok=True)  # Создаем папку для пользователя, если ее нет
+            file_info = await bot.get_file(msg.photo[-1].file_id)
             file_path = file_info.file_path
-            file_name = file_path.split('/')[-1]
-            await bot.download_file(file_path, file_name)
-            await state.update_data(photo_path=file_name)
-            await message.answer("Фотография успешно загружена!")
+            file_name = "photo.jpg"  # Имя файла фотографии
+            file_save_path = os.path.join(user_folder, file_name)
+            await bot.download_file(file_path, file_save_path)
+            await state.update_data(photo_path=file_save_path)
+
+            # Формируем текст резюме
+            data = await state.get_data()
+            resume = f"<b>ФИО:</b> {data['fio']}\n" \
+                     f"<b>Гражданство:</b> {data['citizenship']}\n" \
+                     f"<b>Желаемая позиция:</b> {data['desired_position']}\n" \
+                     "<b>Опыт работы:</b>\n"
+            experience_data = {
+                "company_name": data.get("company_name"),
+                "experience_period": data.get("experience_period"),
+                "experience_position": data.get("experience_position"),
+                "experience_duties": data.get("experience_duties")
+            }
+            resume += str(experience_data)
+
+            desired_salary = data.get('user_desired_salary_level', 'Не указано')
+            employment_type = data.get('user_employment_type', 'Не указано')
+
+            resume += f"<b>Желаемая зарплата:</b> {desired_salary}\n" \
+                      f"<b>Желаемая занятость:</b> {employment_type}\n"
+
+            # Отправляем текст резюме с фотографией
+            await msg.answer_photo(photo=open(file_save_path, 'rb'), caption=f"Ваше резюме:\n\n{resume}\n\nЖелаете что-нибудь подправить или начать заново?",
+                                    parse_mode='HTML', reply_markup=await get_save_restart_keyboard())
         except aiogram.client.errors.TelegramAPIError as e:
             if e.error_code == 404:
-                await message.answer("Файл не найден. Пожалуйста, попробуйте загрузить его еще раз.")
+                await msg.answer("Файл не найден. Пожалуйста, попробуйте загрузить его еще раз.")
                 return
             else:
                 raise e
     else:
-        await message.answer("Пожалуйста, загрузите фотографию.")
+        await msg.answer("Пожалуйста, загрузите фотографию.")
+
+
+
+'''
+
+import traceback
+
+@router.message(UserForm.photo_upload)
+async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
+    if msg.photo:
+        try:
+            username = msg.from_user.username
+            user_folder = f"img/{username}"
+            os.makedirs(user_folder, exist_ok=True)
+            file_info = await bot.get_file(msg.photo[-1].file_id)
+            file_path = file_info.file_path
+
+
+            file_name = "photo.jpg"
+            file_save_path = os.path.join(user_folder, file_name)
+            await bot.download_file(file_path, file_save_path)
+            await state.update_data(photo_path=file_save_path)
+            await msg.answer("Твое резюме готово!\nВот как вот оно выглядит:")
+
+            data = await state.get_data()
+            resume = f"ФИО: {data['fio']}\n" \
+                    f"Гражданство: {data['citizenship']}\n" \
+                    f"Желаемая позиция: {data['desired_position']}\n" \
+                    f"Опыт работы:\n"
+            experience_data = {
+                    "company_name": data.get("company_name"),\
+                    "experience_period": data.get("experience_period"),\
+                    "experience_position": data.get("experience_position"),\
+                    "experience_duties": data.get("experience_duties")\
+                }
+            resume += str(experience_data)
+
+            desired_salary = data.get('user_desired_salary_level', 'Не указано')
+            employment_type = data.get('user_employment_type', 'Не указано')
+
+            resume += f"Желаемая зарплата: {desired_salary}\n" \
+                    f"Желаемая занятость: {employment_type}\n"
+
+            await bot.send_photo(msg.chat.id, photo=types.FSInputFile(file_save_path), caption=resume, reply_markup=await get_save_restart_keyboard())
+
+
+
+        except Exception as e:
+            print(f"An error occurred while processing the photo: {e}")
+            traceback.print_exc()
+            await msg.answer("Произошла ошибка при загрузке фотографии. Попробуйте еще раз.")
+
+
+
 
 
 
@@ -353,9 +455,7 @@ async def photo_upload(message: types.Message, state: FSMContext):
 
 @router.message(UserForm.resume_check)
 async def process_resume_check(msg: Message, state: FSMContext):
-    await state.update_data(resume_check=msg.text)
     data = await state.get_data()
-    
     resume = f"ФИО: {data['fio']}\n" \
              f"Гражданство: {data['citizenship']}\n" \
              f"Желаемая позиция: {data['desired_position']}\n" \
@@ -374,7 +474,6 @@ async def process_resume_check(msg: Message, state: FSMContext):
     resume += f"Желаемая зарплата: {desired_salary}\n" \
               f"Желаемая занятость: {employment_type}\n"
     
-    # Добавляем путь к фотографии в текст резюме, если он есть
     photo_path = data.get("photo_path")
     if photo_path:
         resume += f"Фото: {photo_path}\n"

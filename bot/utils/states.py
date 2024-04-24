@@ -46,5 +46,7 @@ class UserForm(StatesGroup):
     additional_info = State()
     additional_info_details = State()
 
+    user_additional_info  = State()
+
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()

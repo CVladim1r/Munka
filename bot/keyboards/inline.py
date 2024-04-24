@@ -1,11 +1,23 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
+
+
 async def get_save_restart_keyboard():
     Inlinekeyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
                 InlineKeyboardButton(text="Сохранить", callback_data="save_resume"),
                 InlineKeyboardButton(text="Начать заново", callback_data="restart_resume")
+            ]
+        ]
+    )
+    return Inlinekeyboard
+
+async def get_skip_button():
+    Inlinekeyboard = InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Пропустить", callback_data="skip"),
             ]
         ]
     )

@@ -90,6 +90,18 @@ async def personal_cabinet(msg: Message):
 
     user_data = await get_user_data(user_id)
 
+
+
+
+
+
+
+
+
+
+
+
+
     if user_data:
         fullname = user_data.get("user_fio", "Не указано")
         age = user_data.get("user_age", "Не указан")
