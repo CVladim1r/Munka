@@ -6,7 +6,7 @@ import json
 
 
 # Запрос на добавление пользовтаеля в базу данных
-async def add_user_to_db_type_user(user_tgid, user_tgname, user_tgfullname, user_type):
+async def add_user_to_db_type_user( user_tgid, user_tgname, user_tgfullname, user_language, user_type ):
     conn = await create_connection()
     if conn:
         try:
@@ -20,12 +20,12 @@ async def add_user_to_db_type_user(user_tgid, user_tgname, user_tgfullname, user
             if not user_tgname.startswith('@'):
                 user_tgname = '@' + user_tgname
 
-            cursor.execute("INSERT INTO users (user_tgid, user_tgfullname, user_tgname, user_type) "
-                           "VALUES (%s, %s, %s, %s) "
+            cursor.execute("INSERT INTO users (user_tgid, user_tgfullname, user_tgname, user_type, user_language) "
+                           "VALUES (%s, %s, %s, %s, %s) "
                            "ON DUPLICATE KEY UPDATE "
-                           "user_tgfullname=VALUES(user_tgfullname), user_type=VALUES(user_type), "
+                           "user_tgfullname=VALUES(user_tgfullname), user_type=VALUES(user_type), user_language=VALUES(user_language),"
                            "user_tgname=IF(VALUES(user_tgname) <> '', VALUES(user_tgname), user_tgname)",
-                           (user_tgid, user_tgfullname, user_tgname, user_type))
+                           (user_tgid, user_tgfullname, user_tgname, user_type, user_language))
             conn.commit()
             logging.info(f"User with ID {user_tgid} added/updated in the database")
         except mysql.connector.Error as e:
@@ -92,8 +92,6 @@ async def send_resume(user_id, resume_data):
 
 
 
-
-
 # ТОЛЬКО ДЛЯ ТИПА EMPLOYER
 async def add_user_to_db_type_employer(employer_tgid, employer_username, employer_name, employer_type):
     conn = await create_connection()
@@ -110,6 +108,7 @@ async def add_user_to_db_type_employer(employer_tgid, employer_username, employe
             logging.error(f"Error adding user to database: {e}")
         finally:
             conn.close()
+
 
 async def add_employer_to_db(message, employer_id, employer_username, employer_name, employer_type):
     conn = await create_connection()

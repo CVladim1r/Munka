@@ -1,3 +1,4 @@
+# Работает на aiogram версии 2.25 !
 import asyncio
 import logging
 
@@ -97,3 +98,4 @@ async def handle_unknown_message(message: types.Message):
 
 if __name__ == '__main__':
     executor.start_polling(dp, skip_updates=True)
+

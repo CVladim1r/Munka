@@ -41,12 +41,10 @@ CREATE TABLE IF NOT EXISTS vacancies (
 -- Создание таблицы users
 CREATE TABLE IF NOT EXISTS users (
   user_id int NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  user_tgip varchar(255) DEFAULT NULL,
   user_tgid BIGINT,
   user_type enum('EMPLOYER','USER') DEFAULT NULL,
   user_tgname varchar(32) DEFAULT NULL,
   user_tgfullname varchar(255) DEFAULT NULL,
-  user_what_is_your_name varchar(32) DEFAULT NULL,
   user_fio varchar(100) DEFAULT NULL,
   user_age int DEFAULT NULL,
   user_employment enum('FULL','PARTIAL','ONEDAY','UNCLEAR') DEFAULT NULL,

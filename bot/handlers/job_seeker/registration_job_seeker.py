@@ -104,16 +104,17 @@ async def process_location_msk_spb(callback_query: CallbackQuery, state: FSMCont
     location = callback_query.data 
     if callback_query.data == 'msk':  
         location = 'msk'
+        location_text = 'Москва'
     else:
         location = 'spb'
+        location_text = 'Санкт-Петербург'
 
     data = await state.get_data()
-    data['location_text'] = location
+    data['location_text'] = location_text
     data['location'] = location
     await state.update_data(location=location)
-    await update_user_location(callback_query.from_user.id, location)
+    await update_user_location(callback_query.from_user.id, location, location_text)
     await state.update_data(location=location)
-    await state.set_state(UserForm.user_what_is_your_name)
     await callback_query.message.answer("Ты гражданин какой страны?", reply_markup=await get_citizenship_keyboard())
 
 # Наши не Солевые и Московские друзья :(
@@ -126,20 +127,21 @@ async def change_location_other(callback_query: CallbackQuery, state: FSMContext
 # Наши не Солевые и Московские друзья и их добавление в бд :(
 @router.message(UserForm.location_retry)
 async def process_location(msg: Message, state: FSMContext):
-    location = msg.text
-    normalized_location = await normalize_city(location)
+    location_text = msg.text
+    normalized_location = await normalize_city(location_text)
 
     if normalized_location is None:
         await msg.answer("К сожалению, мы не можем разобрать, что это за город. Пожалуйста, введи его снова.")
         return
     
     data = await state.get_data()
-    data['location_text'] = location
+    data['location_text'] = location_text
     data['location'] = normalized_location
-    await state.update_data(location=location)
-    await update_user_location(msg.from_user.id, normalized_location)
+    await state.update_data(location=location_text)
+    await update_user_location(msg.from_user.id, normalized_location, location_text)
     await state.update_data(location=normalized_location)
     await msg.answer("Ты гражданин какой страны?", reply_markup=await get_citizenship_keyboard())
+
 # Варик без расчленения
 '''
 @router.message(UserForm.location)
@@ -185,8 +187,8 @@ async def process_citizen_Russian_Federation(callback_query: CallbackQuery, stat
     await callback_query.message.answer("Выбери желаемую должность:", reply_markup=await get_position_keyboard())
 
     data = await state.get_data()
-    data['citizenship'] = "rus"
-    await state.update_data(citizenship="rus")  # Update the state data
+    data['citizenship'] = "ru"
+    await state.update_data(citizenship="ru")  # Update the state data
     await update_user_citizenship(callback_query.from_user.id, data['citizenship'])
     await state.set_state(UserForm.desired_position)  # Set the next state directly
 

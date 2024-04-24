@@ -26,24 +26,30 @@ from bot.keyboards.inline import *
 from bot.keyboards.reply import *
 from bot.utils.states import *
 
+from bot.handlers.job_seeker.main_job_seeker import main_menu_user
+from bot.handlers.employer.main_employer import main_menu_employer
+
 from bot.database.methods import *
 
 router = Router()
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
+'''
 async def main_menu_user(user_id, message_id):
     main_text = "Искать вакансии\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
     await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
-
 async def main_menu_employer(user_id, message_id):
     main_text = "Искать вакансии:\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
     await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_employer_buttons(), disable_notification=True)
+
+'''
+
 
 
 
@@ -53,9 +59,10 @@ async def start(msg: Message, state: FSMContext):
     
     await state.set_state(UserForm.user_tgid)
     await state.update_data(user_tgid=user_tgid)
-    
-    user_data = await get_user_data(user_tgid)
+
     employer_data = await get_employer_data(user_tgid)
+    user_data = await get_user_data(user_tgid)
+    
 
     if employer_data:
         await main_menu_employer(user_tgid, msg.chat.id)
@@ -68,20 +75,25 @@ async def start(msg: Message, state: FSMContext):
             return
 
     await state.set_state(UserForm.user_fullname)
-    user_tgname = msg.from_user.full_name
-    await state.update_data(user_fullname=user_tgname)
-    
+    user_tgfullname = msg.from_user.full_name
+    await state.update_data(user_fullname=user_tgfullname)
+
     await state.set_state(UserForm.user_tgname)
-    userName = msg.from_user.username
-    await state.update_data(user_tgname=userName)
-    
+    user_tgname = msg.from_user.username
+    await state.update_data(user_tgname=user_tgname)
+
+    await state.set_state(UserForm.user_language_code)
+    user_language_code = msg.from_user.language_code
+    await state.update_data(user_language_code=user_language_code)
+
+
+
     if not user_tgname:
         user_tgname = str(user_tgid)
 
+    await bot.send_message(msg.chat.id, '''Привет я кот Миша.\nЯ выполняю здесь самую главную функцию: помогаю соискателям и работодателям найти друг друга. Представь, у каждого есть работа, а в мире царит гармония – мяу, красота.''', reply_markup=None)
 
-    await bot.send_message(msg.chat.id, '''Привет я кот Миша.\nЯ выполняю здесь самую главную функцию: помогаю соискателям и работодателям найти друг друга. Представь, у каждого есть работа, а в мире царит гармония – мяу, красота. Для этого я здесь.''', reply_markup=None)
-
-    # Позже надо реализовать не через asyncio.sleep
+    # Позже надо реализовать не через asyncio.sleep !
     await asyncio.sleep(4)
     await msg.answer("Давай теперь познакомимся поближе. Кто ты?", reply_markup=await get_choose_rule())
 
@@ -95,9 +107,10 @@ async def process_user_type(callback_query: CallbackQuery, state: FSMContext):
     user_tgid = data.get('user_tgid')
     user_fullname = data.get('user_fullname')
     user_tgname = data.get('user_tgname')
+    user_language = data.get('user_language_code')
     
     if user_type == "job_seeker":
-        await register_job_seeker(user_tgid, user_tgname, user_fullname)
+        await register_job_seeker(user_tgid, user_tgname, user_fullname, user_language)
         await callback_query.message.answer("Отлично, у нас как раз много интересных вакансий! Чтобы выбрать самые подходящие, давай создадим резюме 😊", reply_markup=None)
         await callback_query.message.answer("Напиши свое ФИО\nНапример: Достоевский Федор Михайлович", reply_markup=rmk)
 
@@ -121,6 +134,8 @@ async def help_command(msg: Message):
 
     await msg.answer(help_text, reply_markup=None)
     
+
+
 @router.message(Command('about'))
 async def about_command(msg: Message):
     user_id = msg.from_user.id

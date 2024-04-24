@@ -6,8 +6,6 @@ class UserForm(StatesGroup):
     description = State()
     company_name = State()
     
-    user_what_is_your_name = State()
-
     location = State()
     location_text = State()
     location_retry = State()
@@ -31,7 +29,6 @@ class UserForm(StatesGroup):
     experience_position = State()
     experience_duties = State()
 
-
     search_vacancies = State()
     dislike_resume = State()
 
@@ -40,6 +37,7 @@ class UserForm(StatesGroup):
     user_fullname = State()
     user_tgid = State()
     user_tgname = State()
+    user_language_code = State()
     age = State()
     fio = State()
 

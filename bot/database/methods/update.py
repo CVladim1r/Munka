@@ -4,7 +4,7 @@ from ..db_connector import create_connection
 import json
 
 
-
+  
 
 # ОБНОВЛЕНИЕ ДАННЫХ ТОЛЬКО ДЛЯ ТИПА USER
 
@@ -26,20 +26,22 @@ async def update_user_type(user_tgid, new_user_type):
             conn.close()
             
 # Обновление локации (города) пользователя
-async def update_user_location(user_tgid, new_location):
+async def update_user_location(user_tgid, new_location, new_location_text):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_location = %s WHERE user_tgid = %s",
-                           (new_location, user_tgid))
+            cursor.execute("UPDATE users SET user_location = %s, user_location_text = %s WHERE user_tgid = %s",
+                           (new_location, new_location_text, user_tgid))
+
             conn.commit()
-            logging.info(f"User with ID {user_tgid} updated with new user_location: {new_location}")
+            logging.info(f"User with ID {user_tgid} updated with new user_location: {new_location} and {new_location_text}")
             cursor.close()
         except mysql.connector.Error as e:
             logging.error(f"Error updating user user_location in database: {e}")
         finally:
             conn.close()
+
 
 # Обновление возраста пользователя
 async def update_user_age(user_tgid, new_age):
@@ -57,6 +59,7 @@ async def update_user_age(user_tgid, new_age):
         finally:
             conn.close()
 
+
 # Обновление ФИО пользователя
 async def update_fio(user_tgid, new_name):
     conn = await create_connection()
@@ -72,6 +75,7 @@ async def update_fio(user_tgid, new_name):
             logging.error(f"Error updating user user_fio in database: {e}")
         finally:
             conn.close()
+
 
 # Обновление страны/национальности пользователя
 async def update_user_citizenship(user_tgid, new_citizenship):
@@ -89,6 +93,7 @@ async def update_user_citizenship(user_tgid, new_citizenship):
         finally:
             conn.close()
 
+
 async def update_user_experience(user_tgid, new_experience):
     conn = await create_connection()
     if conn:
@@ -105,37 +110,6 @@ async def update_user_experience(user_tgid, new_experience):
             conn.close()
 
 
-async def update_user_name(user_tgid, new_name):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_what_is_your_name = %s WHERE user_tgid = %s",
-                           (new_name, user_tgid))
-            conn.commit()
-            logging.info(f"User with ID {user_tgid} updated with new user_what_is_your_name: {new_name}")
-            cursor.close()
-        except mysql.connector.Error as e:
-            logging.error(f"Error updating user user_what_is_your_name in database: {e}")
-        finally:
-            conn.close()
-
-
-async def update_user_fullname(user_tgid, new_fullname):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute("UPDATE users SET user_fio = %s WHERE user_tgid = %s",
-                           (new_fullname, user_tgid))
-            conn.commit()
-            logging.info(f"User with ID {user_tgid} updated with new user_fio: {new_fullname}")
-            cursor.close()
-        except mysql.connector.Error as e:
-            logging.error(f"Error updating user user_fio in database: {e}")
-        finally:
-            conn.close()
-
 async def update_user_desired_position(user_tgid, new_desired_position):
     conn = await create_connection()
     if conn:
@@ -151,6 +125,7 @@ async def update_user_desired_position(user_tgid, new_desired_position):
         finally:
             conn.close()
 
+
 async def update_user_desired_salary_level(user_tgid, new_desired_salary_level):
     conn = await create_connection()
     if conn:
@@ -165,6 +140,63 @@ async def update_user_desired_salary_level(user_tgid, new_desired_salary_level):
             logging.error(f"Error updating user desired position in database: {e}")
         finally:
             conn.close()
+
+
+async def update_user_employment_type(user_tgid, new_user_employment_type):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET user_employment_type = %s WHERE user_tgid = %s",
+                           (new_user_employment_type, user_tgid))
+            conn.commit()
+            logging.info(f"User with ID {user_tgid} updated with new desired position: {new_user_employment_type}")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error updating user desired position in database: {e}")
+        finally:
+            conn.close()
+
+
+async def update_user_profession(user_tgid, new_user_profession):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET user_profession = %s WHERE user_tgid = %s",
+                           (new_user_profession, user_tgid))
+            conn.commit()
+            logging.info(f"User with ID {user_tgid} updated with new desired position: {new_user_profession}")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error updating user desired position in database: {e}")
+        finally:
+            conn.close()
+
+
+async def update_user_additional_info(user_tgid, new_user_additional_info):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            cursor.execute("UPDATE users SET user_additional_info = %s WHERE user_tgid = %s",
+                           (new_user_additional_info, user_tgid))
+            conn.commit()
+            logging.info(f"User with ID {user_tgid} updated with new desired position: {new_user_additional_info}")
+            cursor.close()
+        except mysql.connector.Error as e:
+            logging.error(f"Error updating user desired position in database: {e}")
+        finally:
+            conn.close()
+
+
+
+
+
+
+
+
+
 
 
 
