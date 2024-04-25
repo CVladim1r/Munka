@@ -438,7 +438,7 @@ async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
                         resume += f"<b>{experience.get('company_name', 'Не указано')}</b>\n" \
                                 f"Период работы: {experience.get('experience_period', 'Не указано')}\n" \
                                 f"Должность: {experience.get('experience_position', 'Не указано')}\n" \
-                                f"Основные обязанности: {experience.get('experience_duties', 'Не указано')}\n" \
+                                f"Основные обязанности: {experience.get('experience_duties', 'Не указано')}\n\n" \
                         
             else:
                 resume += "Не указано\n"
@@ -514,12 +514,15 @@ async def proc_con(callback_query: CallbackQuery, state: FSMContext):
     await state.clear()
 
 
+
 async def restart_resume(msg: Message, state: FSMContext):
     await state.reset_state()
     await msg.answer("Процесс заполнения резюме начат заново.")
     await process_fio(msg=msg, state=state)
     await UserForm.fullname.set()
     
+
+
 @router.message(UserForm.resume_confirmation)
 async def process_resume_confirmation(msg: Message, state: FSMContext):
     data = await state.get_data()

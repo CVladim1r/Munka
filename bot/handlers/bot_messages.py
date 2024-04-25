@@ -137,7 +137,7 @@ async def personal_cabinet(msg: Message):
         resume += f"<b>{experience.get('company_name', 'Не указано')}</b>\n" \
                   f"Период работы: {experience.get('experience_period', 'Не указано')}\n" \
                   f"Должность: {experience.get('experience_position', 'Не указано')}\n" \
-                  f"Основные обязанности: {experience.get('experience_duties', 'Не указано')}\n" \
+                  f"Основные обязанности: {experience.get('experience_duties', 'Не указано')}\n\n" \
                   
     else:
         resume += "Не указано\n"
