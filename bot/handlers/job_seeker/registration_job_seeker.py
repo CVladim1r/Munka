@@ -419,7 +419,7 @@ async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
             file_save_path = os.path.join(user_folder, file_name)
             await bot.download_file(file_path, file_save_path)
             await state.update_data(photo_path=file_save_path)
-            await update_user_additional_info(msg.from_user.id, file_save_path)
+            await update_user_photo_path(msg.from_user.id, file_save_path)
             await msg.answer("Твое резюме готово!\nВот как вот оно выглядит:")
 
             data = await state.get_data()
@@ -433,12 +433,12 @@ async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
                     f"Занятость: {data.get('user_employment_type', 'Не указано')}\n\n" \
                     f"<i>Опыт работы:</i>\n" \
                     
-            experience = json.loads(data['experience_data'])
-            if isinstance(experience, dict):  # Проверяем, что опыт работы представлен словарем (ихвильних)
-                resume += f"<b>{experience.get('company_name', 'Не указано')}</b>\n" \
-                        f"Период работы: {experience.get('experience_period', 'Не указано')}\n" \
-                        f"Должность: {experience.get('experience_position', 'Не указано')}\n" \
-                        f"Основные обязанности: {experience.get('experience_duties', 'Не указано')}\n" \
+            experience = data.get('experience_data', {})
+            if experience: 
+                        resume += f"<b>{experience.get('company_name', 'Не указано')}</b>\n" \
+                                f"Период работы: {experience.get('experience_period', 'Не указано')}\n" \
+                                f"Должность: {experience.get('experience_position', 'Не указано')}\n" \
+                                f"Основные обязанности: {experience.get('experience_duties', 'Не указано')}\n" \
                         
             else:
                 resume += "Не указано\n"
