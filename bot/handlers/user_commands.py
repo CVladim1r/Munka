@@ -52,7 +52,7 @@ async def main_menu_employer(user_id, message_id):
 
 
 
-
+# job FINDER
 @router.message(CommandStart())
 async def start(msg: Message, state: FSMContext):
     user_tgid = msg.from_user.id
