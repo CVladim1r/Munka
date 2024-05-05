@@ -34,3 +34,19 @@ async def get_employer_data(employer_id):
         finally:
             conn.close()
     return None
+
+# FIX IT PLS
+async def get_admin_data(admin_id):
+    conn = await create_connection()
+    if conn:
+        try:
+            cursor = conn.cursor(dictionary=True)
+            cursor.execute("SELECT * FROM admins WHERE admin_id = %s", (admin_id,))
+            user_data = cursor.fetchone()
+            cursor.close()
+            return user_data
+        except mysql.connector.Error as e:
+            logging.error(f"Error fetching admins data from database: {e}")
+        finally:
+            conn.close()
+    return None

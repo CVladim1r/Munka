@@ -29,6 +29,9 @@ bot = Bot(token=TOKEN_PLUG)
 dp = Dispatcher(bot, storage=storage)
 dp.middleware.setup(LoggingMiddleware(logger=logger)) 
 
+
+# plug bot need update to versoin 2.x -> 3.x
+# u now?
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()
 
