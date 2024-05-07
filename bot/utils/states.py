@@ -1,4 +1,12 @@
 from aiogram.fsm.state import StatesGroup, State
+
+class EmployerForm(StatesGroup):
+    employer_location = State()
+    employer_type = State()
+    user_additional_info  = State()
+
+    ...
+
 class UserForm(StatesGroup):
     nickname = State()
     regStart = State()
@@ -47,6 +55,7 @@ class UserForm(StatesGroup):
     additional_info_details = State()
 
     user_additional_info  = State()
+
 
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()
