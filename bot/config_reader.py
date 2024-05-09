@@ -8,14 +8,27 @@ class Settings(BaseSettings):
         env_file=".env",
         env_file_encoding="utf-8"
     )
-    
-    
+
+'''
 config = Settings(
-    bot_token="6848117166:AAGxWjBudAQulBcY6lCG1_cdwlArp3r4iKI",
+    bot_token="it's_my_token",
     DB_CONFIG={
         'host': '127.0.0.1',
         'user': 'root',
-        'password': 'q1q1q1q1',
-        'database': 'jfdatabase'
+        'password': '',
+        'database': ''
     }
 )
+'''
+
+'''
+.env - file
+
+bot_token="it's_my_token",
+DB_CONFIG={
+    'host': '127.0.0.1',
+    'user': 'root',
+    'password': '',
+    'database': ''
+}
+'''

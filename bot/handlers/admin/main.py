@@ -1,6 +1,6 @@
 from aiogram import Dispatcher
+from ...bot import BotDispatcher
 
-# Админ панель в Munka
-def register_admin_handlers(dp: Dispatcher):
-    # todo: register all admin handlers
-    pass
+bot = BotDispatcher.bot
+
+# Админ панель в боте

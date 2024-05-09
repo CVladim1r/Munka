@@ -15,6 +15,8 @@ async def format_vacancy(vacancy):
     description = vacancy.get('vacancy_description', 'Описание отсутствует')
     formatted_vacancy += f"<b>Описание:</b>\n"
     formatted_vacancy += f"{description}\n\n"
-
+    
+    #Сслыка на вакансию с HeadHunter
     #formatted_vacancy += f"<a href='{vacancy.get('vacancy_url', '')}'>Ссылка на вакансию</a>"
+    
     return formatted_vacancy

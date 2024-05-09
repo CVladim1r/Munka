@@ -5,6 +5,8 @@ asyncio
 requests
 pandas
 scrapy
+json
+bs4
 aiomysql
 mysql-connector-python
 pydantic_settings

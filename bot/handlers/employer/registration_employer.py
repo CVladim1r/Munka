@@ -1,21 +1,5 @@
-import asyncio
-import json
-import os
-import traceback
 
-import aiogram
-from aiogram import Router, F, Bot, types
-from aiogram.types import Message, CallbackQuery
-from aiogram.filters import Command, CommandStart
-from aiogram.methods.send_photo import SendPhoto
 from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.fsm.storage.base import (
-    BaseEventIsolation,
-    BaseStorage,
-    StateType,
-    StorageKey,
-)
 
 from bot.cities import CITIES
 from bot.utils import format_vacancy

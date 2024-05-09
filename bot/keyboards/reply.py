@@ -95,7 +95,6 @@ async def get_choose_menu_user_buttons():
                 KeyboardButton(text="ℹ️ О боте")
             ]
         ],
-        
         resize_keyboard=True)
     return keyboard
 
@@ -110,7 +109,6 @@ async def get_choose_menu_employer_buttons():
                 KeyboardButton(text="ℹ️ О боте")
             ]
         ],
-        
         resize_keyboard=True)
     return keyboard
 

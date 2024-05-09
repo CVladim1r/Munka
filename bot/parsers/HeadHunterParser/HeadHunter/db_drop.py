@@ -1,13 +1,8 @@
-import pymysql
 import json
 import pandas as pd
+from ....database.db_connector import create_connection
 
-connection = pymysql.connect(host='127.0.0.1',
-                             user='root',
-                             password='q1q1q1q1',
-                             database='jfdatabase',
-                             charset='utf8mb4',
-                             cursorclass=pymysql.cursors.DictCursor)
+connection = create_connection
 
 try:
     with open('parsed_vacancies.json', 'r', encoding='utf-8') as file:

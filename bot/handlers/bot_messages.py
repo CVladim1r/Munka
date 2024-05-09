@@ -19,16 +19,15 @@ from aiogram.fsm.storage.base import (
     StorageKey,
 )
 from bot.cities import CITIES
-from bot.utils import format_vacancy
-from bot.config_reader import config
 from bot.keyboards import *
-from bot.utils.states import *
 from bot.database.methods import *
 
 from bot.handlers.bot_messages import *
 
-from aiogram.types.input_file import InputFile
 from bot.utils.states import *
+from bot.utils.format_data import *
+from bot.utils.states import *
+from bot.utils import format_vacancy
 
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
@@ -36,13 +35,12 @@ from bot.keyboards.reply import *
 from bot.database.db_connector import *
 from bot.database.methods import *
 
-from bot.utils.format_data import *
-
 from bot.config_reader import config
 
+from ..bot import BotDispatcher
 
 router = Router()
-bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
+bot = BotDispatcher.bot
 
 
 async def main_menu_user(user_id, message_id):

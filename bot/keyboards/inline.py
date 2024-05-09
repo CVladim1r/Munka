@@ -1,7 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-
-
 async def get_save_restart_keyboard():
     Inlinekeyboard = InlineKeyboardMarkup(
         inline_keyboard=[
