@@ -43,7 +43,7 @@ async def start(msg: Message, state: FSMContext):
     
     await state.set_state(UserForm.user_tgid)
     await state.update_data(user_tgid=user_tgid)
-
+    '''
     employer_data = await get_employer_data(user_tgid)
     user_data = await get_user_data(user_tgid)
     admin_data = await get_admin_data(user_tgid)
@@ -60,7 +60,7 @@ async def start(msg: Message, state: FSMContext):
     elif admin_data:
         await main_menu_admin(user_tgid, msg.chat.id)
         return
-
+    '''
 
     await state.set_state(UserForm.user_fullname)
     user_tgfullname = msg.from_user.full_name
@@ -98,10 +98,11 @@ async def process_user_type(callback_query: CallbackQuery, state: FSMContext):
         await state.set_state(UserForm.fio)
         
     elif user_type == "employer":
-        await bot.send_message("Отлично! Давайте теперь заполним некоторые данные о вашей компании.", reply_markup=None)
+        await callback_query.message.answer("Отлично! Давайте теперь заполним некоторые данные о вашей компании.", reply_markup=None)
         await callback_query.message.answer("Напиши свое ФИО\nНапример: Достоевский Федор Михайлович", reply_markup=rmk)
         
         await state.set_state(EmployerForm.name)
+
 
 
 @router.message(Command('help'))
