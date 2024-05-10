@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS admins (
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Создание таблицы пользователей
-CREATE TABLE IF NOT EXISTS job_seeker (
+CREATE TABLE IF NOT EXISTS job_seekers (
   job_seeker_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
   job_seeker_tgid BIGINT,
   job_seeker_tgname VARCHAR(32) DEFAULT NULL,
@@ -79,7 +79,7 @@ CREATE TABLE IF NOT EXISTS applications (
   application_date DATE DEFAULT NULL,
   PRIMARY KEY (application_id),
   FOREIGN KEY (vacancy_id) REFERENCES vacancies (vacancy_id) ON DELETE CASCADE,
-  FOREIGN KEY (job_seeker_id) REFERENCES job_seeker (job_seeker_id) ON DELETE CASCADE
+  FOREIGN KEY (job_seeker_id) REFERENCES job_seekers (job_seeker_id) ON DELETE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- Создание таблицы статусов сервера
@@ -100,7 +100,7 @@ CREATE TABLE IF NOT EXISTS viewed_vacancies (
   view_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   INDEX user_id_index (job_seeker_id),
   INDEX vacancy_id_index (vacancy_id),
-  FOREIGN KEY (job_seeker_id) REFERENCES job_seeker(job_seeker_id) ON DELETE CASCADE,
+  FOREIGN KEY (job_seeker_id) REFERENCES job_seekers(job_seeker_id) ON DELETE CASCADE,
   FOREIGN KEY (vacancy_id) REFERENCES vacancies(vacancy_id) ON DELETE CASCADE
 );
 
@@ -141,8 +141,8 @@ END//
 DELIMITER ;
 
 -- Создание индексов для таблицы job_seeker
-ALTER TABLE job_seeker ADD INDEX job_seeker_tgid_index (job_seeker_tgid);
-ALTER TABLE job_seeker ADD INDEX job_seeker_desired_position_index (job_seeker_desired_position);
+ALTER TABLE job_seekers ADD INDEX job_seeker_tgid_index (job_seeker_tgid);
+ALTER TABLE job_seekers ADD INDEX job_seeker_desired_position_index (job_seeker_desired_position);
 
 -- Создание индексов для таблицы employers
 ALTER TABLE employers ADD INDEX employer_tgid_index (employer_tgid);

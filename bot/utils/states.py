@@ -1,11 +1,19 @@
 from aiogram.fsm.state import StatesGroup, State
 
 class EmployerForm(StatesGroup):
-    employer_location = State()
-    employer_type = State()
-    user_additional_info  = State()
-
-    ...
+    name = State()             # Name and lastname
+    company_type = State()     # Тип компании
+    
+    individual_info = State()  # ИП       -> company_type
+    physical_info = State()    # Физ лицо -> company_type
+    entity_info = State()      # ООО и АП -> company_type
+    
+    company_info = State()     # Инфа о компании в зависимости от типа
+    
+    company_name = State()
+    type_business_activity = State()
+    company_employer_location = State()
+    location = State()
 
 class UserForm(StatesGroup):
     nickname = State()

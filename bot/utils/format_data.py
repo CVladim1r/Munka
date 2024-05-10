@@ -20,3 +20,4 @@ async def format_vacancy(vacancy):
     #formatted_vacancy += f"<a href='{vacancy.get('vacancy_url', '')}'>Ссылка на вакансию</a>"
     
     return formatted_vacancy
+

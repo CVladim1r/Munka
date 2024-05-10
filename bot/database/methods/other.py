@@ -2,15 +2,13 @@ import mysql.connector # type: ignore
 import logging
 from ..db_connector import create_connection
 
-
-
 # Проверка на наличие пользователя в базе
-async def user_exists_in_db(user_tgid):
+async def job_seeker_exists_in_db(job_seeker_tgid):
     conn = await create_connection()
     if conn:
         try:
             cursor = conn.cursor()
-            cursor.execute("SELECT COUNT(*) FROM users WHERE user_tgid = %s", (user_tgid,))
+            cursor.execute("SELECT COUNT(*) FROM job_seekers WHERE job_seeker_tgid = %s", (job_seeker_tgid,))
             result = cursor.fetchone()
             cursor.close()
             if result and result[0] > 0:

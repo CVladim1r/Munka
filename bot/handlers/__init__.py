@@ -1,1 +1,1 @@
-from . import user_commands, admin, employer, job_seeker, bot_messages, user_registration
+from . import user_commands, admin, employer, job_seeker, bot_messages

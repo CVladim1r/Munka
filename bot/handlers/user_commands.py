@@ -7,12 +7,13 @@ from aiogram.fsm.context import FSMContext
 
 from bot.handlers.job_seeker.main_job_seeker import main_menu_user
 from bot.handlers.employer.main_employer import main_menu_employer
+from bot.handlers.admin.main_admin import main_menu_admin
+
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
 from bot.database.methods import *
 from bot.utils.states import *
 
-from .user_registration import *
 from ..bot import BotDispatcher
 
 router = Router()
@@ -44,17 +45,21 @@ async def start(msg: Message, state: FSMContext):
 
     employer_data = await get_employer_data(user_tgid)
     user_data = await get_user_data(user_tgid)
-    
+    admin_data = await get_admin_data(user_tgid)
+
 
     if employer_data:
         await main_menu_employer(user_tgid, msg.chat.id)
         return
     
     elif user_data:
-        user_type = user_data.get("user_type")
-        if user_type == "USER":
-            await main_menu_user(user_tgid, msg.chat.id)
-            return
+        await main_menu_user(user_tgid, msg.chat.id)
+        return
+    
+    elif admin_data:
+        await main_menu_admin(user_tgid, msg.chat.id)
+        return
+
 
     await state.set_state(UserForm.user_fullname)
     user_tgfullname = msg.from_user.full_name
@@ -85,23 +90,17 @@ async def start(msg: Message, state: FSMContext):
 async def process_user_type(callback_query: CallbackQuery, state: FSMContext):
     user_type = callback_query.data
 
-    data = await state.get_data()
-    user_tgid = data.get('user_tgid')
-    user_fullname = data.get('user_fullname')
-    user_tgname = data.get('user_tgname')
-    user_language = data.get('user_language_code')
-    
     if user_type == "job_seeker":
-        await register_job_seeker(user_tgid, user_tgname, user_fullname, user_language)
         await callback_query.message.answer("Отлично, у нас как раз много интересных вакансий! Чтобы выбрать самые подходящие, давай создадим резюме 😊", reply_markup=None)
         await callback_query.message.answer("Напиши свое ФИО\nНапример: Достоевский Федор Михайлович", reply_markup=rmk)
 
         await state.set_state(UserForm.fio)
-        #await state.set_state(UserForm.age)
-
+        
     elif user_type == "employer":
-        await register_employer(callback_query.message, user_tgid, user_fullname, user_tgname)
-
+        await bot.send_message("Отлично! Давайте теперь заполним некоторые данные о вашей компании.", reply_markup=None)
+        await callback_query.message.answer("Напиши свое ФИО\nНапример: Достоевский Федор Михайлович", reply_markup=rmk)
+        
+        await state.set_state(EmployerForm.name)
 
 
 @router.message(Command('help'))

@@ -35,7 +35,6 @@ from bot.keyboards.reply import *
 from bot.database.db_connector import *
 from bot.database.methods import *
 
-from bot.config_reader import config
 
 from ..bot import BotDispatcher
 
@@ -49,68 +48,6 @@ async def main_menu_user(user_id, message_id):
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
     await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
-
-@router.message(F.text=='🔍 Искать Вакансии')
-async def seacrh_vacancies(msg: Message):
-    user_id = msg.from_user.id
-    user_data = await get_user_data(user_id)
-    
-    if user_data:
-        random_vacancy = await get_random_vacancy_for_user(user_id)
-        
-        if random_vacancy:
-            formatted_vacancy = await format_vacancy(random_vacancy)
-            await msg.answer(
-                formatted_vacancy,
-                parse_mode="HTML",
-                reply_markup=await get_send_or_dislike_resume_keyboard()
-            )
-        else:
-            await msg.answer(
-                "К сожалению, не удалось найти вакансии. Попробуйте еще раз позже.",
-                reply_markup=None
-            )
-
-    else: 
-        await msg.answer(
-            "Похоже что ты не зарегистрирован в системе. Самое время пройти регистраицю! /start",
-            reply_markup=None
-        )
-        
-@router.message(F.text=="👎")
-async def dislike_resume(msg: Message):
-    user_id = msg.from_user.id
-    user_data = await get_user_data(user_id)
-
-    if user_data:
-        random_vacancy = await get_random_vacancy_for_user(user_id)
-
-        if random_vacancy:
-            formatted_vacancy = await format_vacancy(random_vacancy)
-            await msg.answer(
-                formatted_vacancy,
-                parse_mode="HTML",
-                reply_markup=await get_send_or_dislike_resume_keyboard()
-            )
-        else:
-            await msg.answer(
-                "К сожалению, не удалось найти вакансии. Попробуйте еще раз позже.",
-                reply_markup=None
-            )
-
-@router.message(F.text=="✉")
-async def send_resume_vacancy(msg: Message):
-    user_id = msg.from_user.id
-    user_data = await get_user_data(user_id)
-
-    if user_data:
-        await msg.answer("Резюме отправлено!\n\nТеперь можно перейти к просмотру анкет дальше!")
-        await seacrh_vacancies(msg)
-
-@router.message(F.text == '😴')
-async def personal_sleep(msg: Message):
-    await msg.answer("Отлично! Самое время сделать перерв 😁", reply_markup=await get_choose_menu_user_buttons()) 
-
 @router.message(F.text == '👤 Личный кабинет')
 async def personal_cabinet(msg: Message):
     user_id = msg.from_user.id

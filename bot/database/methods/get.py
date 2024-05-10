@@ -1,52 +1,23 @@
-import mysql.connector # type: ignore
 import logging
 from ..db_connector import create_connection
 
-# Запрос на получение данных с базы
-async def get_user_data(user_tgid):
-    conn = await create_connection()
-    if conn:
+async def get_data(table, column, value):
+    query = f"SELECT * FROM {table} WHERE {column} = %s"
+    async with create_connection() as conn:
         try:
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM users WHERE user_tgid = %s", (user_tgid,))
-            user_data = cursor.fetchone()
-            cursor.close()
-            print("User data:", user_data) 
-            return user_data
-        except mysql.connector.Error as e:
-            logging.error(f"Error fetching user data from database: {e}")
-        finally:
-            conn.close()
+            async with conn.cursor(dictionary=True) as cursor:
+                await cursor.execute(query, (value,))
+                data = await cursor.fetchone()
+                return data
+        except Exception as e:
+            logging.error(f"Error fetching {table} data from database: {e}")
     return None
 
-# FIX IT PLS
-async def get_employer_data(employer_id):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM employers WHERE employer_id = %s", (employer_id,))
-            user_data = cursor.fetchone()
-            cursor.close()
-            return user_data
-        except mysql.connector.Error as e:
-            logging.error(f"Error fetching user data from database: {e}")
-        finally:
-            conn.close()
-    return None
+async def get_user_data(job_seeker_tgid):
+    return await get_data("job_seekers", "job_seeker_tgid", job_seeker_tgid)
 
-# FIX IT PLS
-async def get_admin_data(admin_id):
-    conn = await create_connection()
-    if conn:
-        try:
-            cursor = conn.cursor(dictionary=True)
-            cursor.execute("SELECT * FROM admins WHERE admin_id = %s", (admin_id,))
-            user_data = cursor.fetchone()
-            cursor.close()
-            return user_data
-        except mysql.connector.Error as e:
-            logging.error(f"Error fetching admins data from database: {e}")
-        finally:
-            conn.close()
-    return None
+async def get_employer_data(employer_tgid):
+    return await get_data("employers", "employer_tgid", employer_tgid)
+
+async def get_admin_data(admin_tgid):
+    return await get_data("admins", "admin_tgid", admin_tgid)

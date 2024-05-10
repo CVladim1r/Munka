@@ -2,7 +2,7 @@ from aiogram import Router, F, Bot
 
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
-from ...bot import BotDispatcher
+from ....bot.bot import BotDispatcher
 
 bot = BotDispatcher.bot
 

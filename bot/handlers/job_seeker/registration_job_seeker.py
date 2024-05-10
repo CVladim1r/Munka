@@ -6,16 +6,12 @@ from aiogram import types
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-
 from bot.cities import CITIES
 from bot.keyboards import *
 from bot.utils.states import *
 from bot.database.methods import *
-
 from bot.handlers.bot_messages import *
-
-from aiogram.types.input_file import InputFile
-
+from bot.utils import normalize_city
 
 async def register_job_seeker(user_tgid, user_tgname, user_fullname, state: FSMContext):
     """
@@ -30,29 +26,12 @@ async def register_job_seeker(user_tgid, user_tgname, user_fullname, state: FSMC
     # Вместо прямого вызова функций proc_age и process_location будем устанавливать состояния FSM
     await state.set_state(UserForm.fio)
 
-# Поиск города для сохранения в normalize_location
-async def normalize_city(city_name):
-    print(f"Searching for city: {city_name}")
-    for key, variants in CITIES.items():
-        for variant in variants:
-            if city_name.lower() in variant:
-                print(f"Found city: {key}")
-                return key
-    return None
-
 # Вопрос про ФИО для соискателя
 @router.message(UserForm.fio)
 async def process_fio(msg: Message, state: FSMContext):
     await state.update_data(fio=msg.text)
-    data = await state.get_data()
-    new_name = data.get('fio')
-
-    # Обновление ФИО в базе данных
-    await update_fio(msg.from_user.id, new_name)
-
     # Продолжаем диалог
     await state.set_state(UserForm.age)
-
     await msg.answer("Сколько тебе полных лет?\nНапример: 21", reply_markup=None)
 
 # Вопрос про возраст для соискателя
@@ -76,9 +55,6 @@ async def process_age(msg: Message, state: FSMContext):
         return
     
     await state.update_data(age=msg.text)
-    dats = await state.get_data()
-    data = dats.get('age')
-    await update_user_age(msg.from_user.id, data)
     await state.update_data(age=msg.text)
     
     await msg.answer("В каком городе планируешь работать?", reply_markup=await get_location_keyboard())
@@ -106,8 +82,6 @@ async def process_location_msk_spb(callback_query: CallbackQuery, state: FSMCont
     data['location_text'] = location_text
     data['location'] = location
     await state.update_data(location=location)
-    await update_user_location(callback_query.from_user.id, location, location_text)
-    await state.update_data(location=location)
     await callback_query.message.answer("Ты гражданин какой страны?", reply_markup=await get_citizenship_keyboard())
 
 # Наши не Солевые и Московские друзья :(
@@ -131,8 +105,7 @@ async def process_location(msg: Message, state: FSMContext):
     data['location_text'] = location_text
     data['location'] = normalized_location
     await state.update_data(location=location_text)
-    await update_user_location(msg.from_user.id, normalized_location, location_text)
-    await state.update_data(location=normalized_location)
+    #await state.update_data(location=normalized_location)
     await msg.answer("Ты гражданин какой страны?", reply_markup=await get_citizenship_keyboard())
 
 # Варик без расчленения
@@ -182,7 +155,6 @@ async def process_citizen_Russian_Federation(callback_query: CallbackQuery, stat
     data = await state.get_data()
     data['citizenship'] = "ru"
     await state.update_data(citizenship="ru")  # Update the state data
-    await update_user_citizenship(callback_query.from_user.id, data['citizenship'])
     await state.set_state(UserForm.desired_position)  # Set the next state directly
 
 # Наши не Солевые и Московские друзья :(
@@ -198,8 +170,6 @@ async def change_other_citizen(callback_query: CallbackQuery, state: FSMContext)
 @router.message(UserForm.citizenship)
 async def process_citizenship(msg: Message, state: FSMContext):
     await state.update_data(citizenship=msg.text)
-    data = await state.get_data()
-    await update_user_citizenship(msg.from_user.id, data['citizenship'])
     await msg.answer("Выбери желаемую должность:", reply_markup=await get_position_keyboard())
     await state.set_state(UserForm.desired_position)
 
@@ -207,8 +177,6 @@ async def process_citizenship(msg: Message, state: FSMContext):
 @router.message(UserForm.desired_position)
 async def process_desired_position(msg: Message, state: FSMContext):
     await state.update_data(desired_position=msg.text)
-    data = await state.get_data()
-    await update_user_desired_position(msg.from_user.id, data['desired_position'])
     await state.set_state(UserForm.user_desired_salary_level)
     await msg.answer("Какую зарплату ты бы хотел получать?\nНапример: 50 000", reply_markup=rmk)
 
@@ -216,8 +184,6 @@ async def process_desired_position(msg: Message, state: FSMContext):
 @router.message(UserForm.user_desired_salary_level)
 async def process_user_desired_salary_level(msg: Message, state: FSMContext):
     await state.update_data(user_desired_salary_level=msg.text)
-    data = await state.get_data()
-    await update_user_desired_salary_level(msg.from_user.id, data['user_desired_salary_level'])
     await msg.answer("Какая занятость тебя интересует ?", reply_markup=await get_employment_keyboard())
 
 # Выбор и отправка занятости , а так же вопрос опыте работы
@@ -230,8 +196,6 @@ async def process_desired_positionv1(callback_query: CallbackQuery, state: FSMCo
         new_user_employment_type = 'Частичная занятость'
 
     await state.update_data(user_employment_type=new_user_employment_type)
-    await update_user_employment_type(callback_query.from_user.id, new_user_employment_type)
-
     await state.set_state(UserForm.work_experience)
     await message.answer("Был ли у тебя опыт работы?", reply_markup=await get_yes_no_keyboard())
 
@@ -293,7 +257,6 @@ async def process_experience_another(msg: Message, state: FSMContext):
         }
         await state.update_data(experience_data=experience_data)
         # Сохранение опыта работы
-        await update_user_experience(msg.from_user.id, experience_data)
         await state.set_state(UserForm.additional_info)
         await msg.answer("Все круги ада пройдены! 👹\nТеперь финишная прямая.", reply_markup=rmk)
         await msg.answer("Хочешь ли ты добавить дополнительную информацию информацию о себе?", reply_markup=await get_yes_no_keyboard())
@@ -318,7 +281,6 @@ async def process_additional_info(msg: Message, state: FSMContext):
 async def process_additional_info_details(msg: Message, state: FSMContext):
     additional_info = msg.text
     await state.update_data(additional_info=additional_info)
-    await update_user_additional_info(msg.from_user.id, additional_info)
 
     await state.set_state(UserForm.photo_upload)
     await msg.answer("Чего-то не хватает. Соли? Перца? Фотографии! Ждем твое фото 🔥", reply_markup=await get_skip_button())
@@ -406,7 +368,6 @@ async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
             file_save_path = os.path.join(user_folder, file_name)
             await bot.download_file(file_path, file_save_path)
             await state.update_data(photo_path=file_save_path)
-            await update_user_photo_path(msg.from_user.id, file_save_path)
             await msg.answer("Твое резюме готово!\nВот как вот оно выглядит:")
 
             data = await state.get_data()
@@ -485,7 +446,6 @@ async def process_resume_check(msg: Message, state: FSMContext):
 async def proc_con(callback_query: CallbackQuery, state: FSMContext):
     if callback_query.data == 'save_resume' or callback_query.message.text.lower() in ['да', 'save_resume', 'сохранить', '/save_resume', 'Сохранить']:
         await state.set_state(UserForm.resume_confirmation)
-        await send_resume(callback_query.from_user.id, await state.get_data())
         await state.update_data(resume_confirmation="Отправлено")
         await callback_query.message.answer("Резюме отправлено на модерацию.\nВ среднем, она выполняется за 5-10 минут.\nА пока можно пойти и выпить чаю ☕️\nты этого точно заслуживаешь!")
         await main_menu_user(callback_query.from_user.id, callback_query.message.message_id)
@@ -512,9 +472,7 @@ async def restart_resume(msg: Message, state: FSMContext):
 
 @router.message(UserForm.resume_confirmation)
 async def process_resume_confirmation(msg: Message, state: FSMContext):
-    data = await state.get_data()
     if msg.text.lower()=='да':
-        await send_resume(msg.from_user.id, data)
         await msg.answer("Резюме отправлено на модерацию.\nВ среднем, она выполняется за 10 минут.\nА пока можно пойти и выпить чаю ☕️\nты этого точно заслуживаешь!")
         await main_menu_user(msg.from_user.id, msg.message_id)
     else: 
