@@ -1,16 +1,30 @@
 Схема проекта:
 
 JFBot/
-│
 ├── bot/
 │   ├── data/
 │   │   └── vacancies.csv
 │   │
 │   ├── database/
+│   │   ├── methods/
+│   │   │   ├── __init__.py
+│   │   │   ├── create.py
+│   │   │   ├── delete.py
+│   │   │   ├── get.py
+│   │   │   ├── other.py
+│   │   │   ├── update.py
+│   │   │   └── vacancies.py
+│   │   │
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   └── main.py
+│   │   │
 │   │   ├── __init__.py
 │   │   └── db_connector.py
 │   │
 │   ├── filters/
+│   │   ├── __init__.py
+│   │   └── main.py
 │   │
 │   ├── handlers/
 │   │   ├── admin/
@@ -29,7 +43,8 @@ JFBot/
 │   │   │
 │   │   ├── __init__.py
 │   │   ├── bot_messages.py
-│   │   └── user_commands.py
+│   │   ├── user_commands.py
+│   │   └── user_registration.py
 │   │
 │   ├── keyboards/
 │   │   ├── __init__.py
@@ -42,12 +57,12 @@ JFBot/
 │   │   └── states.py
 │   │
 │   ├── __init__.py
+|   ├── .env
 │   ├── bot.py
 │   ├── cities.py
-│   ├── config_reader.py
-│   └── user_registration.py
+│   └── config_reader.py
 │
-├── git
+├── gitignore
 ├── LICENSE
 ├── README.md
 ├── requirements.txt
