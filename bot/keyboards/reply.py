@@ -16,9 +16,9 @@ get_send_or_dislike_resume_keyboard = ReplyKeyboardMarkup(
 company_type = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="Индивидуальный предприниматель (ИП)"),
+            KeyboardButton(text="ИП"),
             KeyboardButton(text="Физическое лицо"),
-            KeyboardButton(text="Юридическое лицо (ООО, АО)")
+            KeyboardButton(text="Юр лицо (ООО, АО)")
         ]
     ],
     resize_keyboard=True,

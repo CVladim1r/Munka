@@ -9,7 +9,7 @@ class EmployerForm(StatesGroup):
     entity_info = State()      # ООО и АП -> company_type
     
     company_info = State()     # Инфа о компании в зависимости от типа
-    
+    company_verification = State()
     company_name = State()
     type_business_activity = State()
     company_employer_location = State()
