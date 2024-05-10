@@ -75,7 +75,7 @@ CREATE TABLE IF NOT EXISTS applications (
   application_id INT NOT NULL AUTO_INCREMENT,
   vacancy_id INT NOT NULL,
   job_seeker_id INT NOT NULL,
-  status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
+  applications_status ENUM('PENDING', 'APPROVED', 'REJECTED') DEFAULT 'PENDING',
   application_date DATE DEFAULT NULL,
   PRIMARY KEY (application_id),
   FOREIGN KEY (vacancy_id) REFERENCES vacancies (vacancy_id) ON DELETE CASCADE,
