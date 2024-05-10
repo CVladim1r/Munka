@@ -35,12 +35,14 @@ from bot.keyboards.reply import *
 from bot.database.db_connector import *
 from bot.database.methods import *
 
+from bot.config_reader import config
 
-from ..bot import BotDispatcher
 
 router = Router()
-bot = BotDispatcher.bot
+bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
+
+router = Router()
 
 async def main_menu_user(user_id, message_id):
     main_text = "Искать вакансии\n"

@@ -1,12 +1,8 @@
 from aiogram import Router, F, Bot
-
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
-from ....bot.bot import BotDispatcher
 
-bot = BotDispatcher.bot
-
-async def main_menu_user(user_id, message_id):
+async def main_menu_user(bot, user_id, message_id):
     main_text = "Искать вакансии\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"

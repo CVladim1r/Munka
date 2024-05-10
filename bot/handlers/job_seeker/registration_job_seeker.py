@@ -10,8 +10,13 @@ from bot.cities import CITIES
 from bot.keyboards import *
 from bot.utils.states import *
 from bot.database.methods import *
-from bot.handlers.bot_messages import *
 from bot.utils import normalize_city
+from bot.handlers.bot_messages import *
+
+from bot.handlers.bot_messages import *
+
+# Use BotDispatcher.dp directly where needed
+
 
 async def register_job_seeker(user_tgid, user_tgname, user_fullname, state: FSMContext):
     """

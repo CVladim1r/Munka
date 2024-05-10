@@ -1,8 +1,9 @@
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
-from ...bot import BotDispatcher
+from bot.config_reader import config
+from aiogram import Router, F, Bot
 
-bot = BotDispatcher.bot
+bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
 async def main_menu_employer(user_id, message_id):
     main_text = "Активные вакансии\n"

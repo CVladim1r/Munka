@@ -5,7 +5,6 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 
-from bot.handlers.job_seeker.main_job_seeker import main_menu_user
 from bot.handlers.employer.main_employer import main_menu_employer
 from bot.handlers.admin.main_admin import main_menu_admin
 
@@ -14,10 +13,12 @@ from bot.keyboards.reply import *
 from bot.database.methods import *
 from bot.utils.states import *
 
-from ..bot import BotDispatcher
+from bot.handlers.bot_messages import *
+
+from aiogram.types.input_file import InputFile
 
 router = Router()
-bot = BotDispatcher.bot
+bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
 '''
 async def main_menu_user(user_id, message_id):
