@@ -18,9 +18,9 @@ get_save_restart_keyboard = ReplyKeyboardMarkup(
         [
             KeyboardButton(text="Сохранить"),
             KeyboardButton(text="Начать заново"),
-            KeyboardButton(text="Изменить"),
+            KeyboardButton(text="Изменить")
         ]
-    ]
+    ],
     resize_keyboard=True,
 )
 
