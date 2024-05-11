@@ -1,17 +1,42 @@
+from aiogram import Router, F, Bot
+from aiogram.types import Message, CallbackQuery
+from aiogram.fsm.context import FSMContext
+import asyncio
 import json
-
+import os
+import aiogram
 from aiogram import Router, F, Bot, types
-from aiogram.types import Message
+from aiogram.types import Message, CallbackQuery
+from aiogram.filters import Command, CommandStart
+from aiogram.methods.send_photo import SendPhoto
 
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.fsm.storage.base import (
+    BaseEventIsolation,
+    BaseStorage,
+    StateType,
+    StorageKey,
+)
+from bot.cities import CITIES
 from bot.keyboards import *
 from bot.database.methods import *
+
 from bot.handlers.bot_messages import *
+
 from bot.utils.states import *
-from bot.keyboards import *
+from bot.utils.format_data import *
+from bot.utils.states import *
+from bot.utils import format_vacancy
+
+from bot.keyboards.inline import *
+from bot.keyboards.reply import *
+
+from bot.database.db_connector import *
 from bot.database.methods import *
+
 from bot.config_reader import config
 
-from .job_seeker.main_job_seeker import main_menu_job_seeker
 
 router = Router()
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
@@ -19,7 +44,14 @@ bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
 router = Router()
 
-
+async def main_menu_user(user_id, message_id):
+    main_text = "Искать вакансии\n"
+    main_text += "Личный кабинет\n"
+    main_text += "Редактировать резюме\n"
+    main_text += "О боте\n"
+    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
+    
+    
 @router.message(F.text == '👤 Личный кабинет')
 async def personal_cabinet(msg: Message):
     user_id = msg.from_user.id
@@ -59,7 +91,7 @@ async def back_to_main_menu(msg: Message):
     user_data = await get_user_data(user_id)
     if user_data:
         name = user_data.get("name")
-        await main_menu_job_seeker(user_id, name)
+        await main_menu_user(user_id, name)
     else:
         await msg.answer("Информация о пользователе не найдена. Пройдите регистрацию нажав на команду /start", reply_markup=None)
 

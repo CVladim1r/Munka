@@ -5,9 +5,6 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 
-from bot.handlers.employer.main_employer import main_menu_employer
-from bot.handlers.admin.main_admin import main_menu_admin
-
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
 from bot.database.methods import *

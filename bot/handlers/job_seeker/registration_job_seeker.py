@@ -1,17 +1,19 @@
 import json
 import os
 import traceback
+import json
 
-from aiogram import Router, F, Bot, types
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
+from aiogram import Router, F, Bot, types
+
+from bot.utils import normalize_city
+from .main_job_seeker import main_menu_job_seeker
 
 from bot.keyboards import *
 from bot.utils.states import *
 from bot.database.methods import *
-from bot.utils import normalize_city
 from bot.handlers.bot_messages import *
-from .main_job_seeker import main_menu_job_seeker
 
 async def register_job_seeker(user_tgid, user_tgname, user_fullname, state: FSMContext):
     """
@@ -137,13 +139,13 @@ async def process_desired_salary_level(msg: Message, state: FSMContext):
 async def process_desired_positionv1(callback_query: CallbackQuery, state: FSMContext):
     message = callback_query.message
     if callback_query.data == 'full_employment':
-        new_user_employment_type = 'Полная занятость'
+        new_employment_type = 'Полная занятость'
     elif callback_query.data == 'part-time_employment':
-        new_user_employment_type = 'Частичная занятость'
+        new_employment_type = 'Частичная занятость'
     else:
         return
 
-    await state.update_data(user_employment_type=new_user_employment_type)
+    await state.update_data(employment_type=new_employment_type)
     await state.set_state(UserForm.work_experience)
     await message.answer("Был ли у тебя опыт работы?", reply_markup=get_yes_no_keyboard)
 
@@ -192,7 +194,7 @@ async def process_experience_position(msg: Message, state: FSMContext):
 async def process_experience_duties(msg: Message, state: FSMContext):
     await state.update_data(work_experience_duties=msg.text)
     await state.set_state(UserForm.work_experience_another)
-    await msg.answer("Был ли у вас другой опыт работы?", reply_markup=await get_yes_no_keyboard())
+    await msg.answer("Был ли у вас другой опыт работы?", reply_markup=get_yes_no_keyboard)
 
 
 # process_experience_another
@@ -201,22 +203,22 @@ async def process_experience_another(msg: Message, state: FSMContext):
     if msg.text.lower() == 'да':
         await state.set_state(UserForm.work_company_name)
         await msg.answer("Отлично! Напишите название предыдущего места работы.", reply_markup=rmk)
+        
     elif msg.text.lower() == 'нет':
         data = await state.get_data()
-        experience_data = {
-            "company_name": data.get("company_name"),
-            "experience_period": data.get("experience_period"),
-            "experience_position": data.get("experience_position"),
-            "experience_duties": data.get("experience_duties")
+        new_data = {
+            "work_company_name": data.get("work_company_name"),
+            "work_experience_period": data.get("work_experience_period"),
+            "work_experience_position": data.get("work_experience_position"),
+            "work_experience_duties": data.get("work_experience_duties")
         }
-        await state.update_data(experience_data=experience_data)
-        # Сохранение опыта работы
+        await state.update_data(work_experience_data=new_data)
         await state.set_state(UserForm.additional_info)
+        
         await msg.answer("Все круги ада пройдены! 👹\nТеперь финишная прямая.", reply_markup=rmk)
         await msg.answer("Хочешь ли ты добавить дополнительную информацию информацию о себе?", reply_markup=get_yes_no_keyboard)
-
     else:
-        await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=await get_yes_no_keyboard())
+        await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=get_yes_no_keyboard)
 
 
 # process_additional_info
@@ -308,12 +310,12 @@ async def process_resume_check(msg: Message, state: FSMContext):
              f"Возраст: {data['age']}\n" \
              f"Город: {data['location_text']}\n" \
              f"Гражданство: {data['citizenship']}\n" \
-             f"Желаемый уровень з/п: {data['user_desired_salary_level']}\n" \
-             f"Занятость: {data.get('user_employment_type', 'Не указано')}\n\n" \
+             f"Желаемый уровень з/п: {data['desired_salary_level']}\n" \
+             f"Занятость: {data.get('employment_type', 'Не указано')}\n\n" \
              f"<i>Опыт работы:</i>\n" \
              
     work_experience = json.loads(data['work_experience_data'])
-    if isinstance(work_experience, dict):  # Проверяем, что опыт работы представлен словарем (ихвильних)
+    if isinstance(work_experience, dict):
         resume += f"<b>{work_experience.get('work_company_name', 'Не указано')}</b>\n" \
                   f"Период работы: {work_experience.get('work_experience_period', 'Не указано')}\n" \
                   f"Должность: {work_experience.get('work_experience_position', 'Не указано')}\n" \
@@ -323,7 +325,7 @@ async def process_resume_check(msg: Message, state: FSMContext):
         resume += "Не указано\n"
     username = msg.from_user.username
 
-    additional_info = data.get('user_additional_info', 'Не указано')
+    additional_info = data.get('additional_info', 'Не указано')
     resume += f"<i>Дополнительная информация:</i> {additional_info}\n"
     photo_path = f"users_files/job_seeker/{username}/photo/resume_photo.jpg"
 
@@ -355,7 +357,7 @@ async def proc_con(callback_query: CallbackQuery, state: FSMContext):
 
 
 async def restart_resume(msg: Message, state: FSMContext):
-    await state.reset_state()
+    await state.clear()
     await msg.answer("Хорошо, давай заполним твое резюме сначала :)")
     await process_fio(msg=msg, state=state)
     

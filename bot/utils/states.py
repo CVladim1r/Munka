@@ -15,6 +15,11 @@ class EmployerForm(StatesGroup):
     company_verification = State()  # Верификация
 
 class UserForm(StatesGroup):
+    user_tgid = State()
+    user_language_code = State()
+    user_fullname = State()
+    user_tgname = State()
+    
     fio = State()
     age = State()
     citizenship = State()
@@ -25,6 +30,8 @@ class UserForm(StatesGroup):
     
     desired_position = State()
     desired_salary_level = State()
+    
+    employment_type = State()
     
     work_experience = State()           # -> work_experience_data
     work_company_name = State()         # -> work_experience_data
@@ -41,39 +48,7 @@ class UserForm(StatesGroup):
     photo_path = State()
     
     resume_check = State()
-    
-    
-    resume_check = State()
     resume_confirmation = State()
-    resume_start = State()
-
-    resume_edit = State()
     
-    experience_data = State()
-    experience_details = State()
-    experience_another = State()
-    experience_description = State()
-    experience_period = State()
-    experience_position = State()
-    experience_duties = State()
-
-    search_vacancies = State()
-    dislike_resume = State()
-
-    user_desired_salary_level = State()
-    user_employment_type = State()
-    user_fullname = State()
-    user_tgid = State()
-    user_tgname = State()
-    user_language_code = State()
-    age = State()
-    fio = State()
-
-    additional_info = State()
-    additional_info_details = State()
-
-    user_additional_info  = State()
-
-
 class CommandState(StatesGroup):
     COMMAND_PROCESSING = State()
