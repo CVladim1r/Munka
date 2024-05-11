@@ -20,23 +20,8 @@ from aiogram.types.input_file import InputFile
 router = Router()
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
-'''
-async def main_menu_user(user_id, message_id):
-    main_text = "Искать вакансии\n"
-    main_text += "Личный кабинет\n"
-    main_text += "Редактировать резюме\n"
-    main_text += "О боте\n"
-    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
-async def main_menu_employer(user_id, message_id):
-    main_text = "Искать вакансии:\n"
-    main_text += "Личный кабинет\n"
-    main_text += "Редактировать резюме\n"
-    main_text += "О боте\n"
-    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_employer_buttons(), disable_notification=True)
 
-'''
-
-# job FINDER
+# /start
 @router.message(CommandStart())
 async def start(msg: Message, state: FSMContext):
     user_tgid = msg.from_user.id
@@ -76,7 +61,6 @@ async def start(msg: Message, state: FSMContext):
     await state.update_data(user_language_code=user_language_code)
 
 
-
     if not user_tgname:
         user_tgname = str(user_tgid)
 
@@ -87,25 +71,24 @@ async def start(msg: Message, state: FSMContext):
     await msg.answer("Давай теперь познакомимся поближе. Кто ты?", reply_markup=await get_choose_rule())
 
 
-
 @router.callback_query(lambda c: c.data in ["job_seeker", "employer"])
 async def process_user_type(callback_query: CallbackQuery, state: FSMContext):
     user_type = callback_query.data
+    await callback_query.message.delete()
 
     if user_type == "job_seeker":
         await callback_query.message.answer("Отлично, у нас как раз много интересных вакансий! Чтобы выбрать самые подходящие, давай создадим резюме 😊", reply_markup=rmk)
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
         await callback_query.message.answer("Напиши свое ФИО\nНапример: Достоевский Федор Михайлович", reply_markup=rmk)
 
         await state.set_state(UserForm.fio)
         
     elif user_type == "employer":
         await callback_query.message.answer("Отлично, у нас как раз много сотрудников! Чтобы найти подходящего, давай создадим профиль компании 😊", reply_markup=rmk)
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
         await callback_query.message.answer("Как к Вам обращаться?", reply_markup=rmk)
         
         await state.set_state(EmployerForm.name)
-    await callback_query.message.delete()
 
 
 @router.message(Command('help'))
@@ -120,7 +103,6 @@ async def help_command(msg: Message):
 
     await msg.answer(help_text, reply_markup=None)
     
-
 
 @router.message(Command('about'))
 async def about_command(msg: Message):
