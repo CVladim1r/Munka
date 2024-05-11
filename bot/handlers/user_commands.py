@@ -105,7 +105,7 @@ async def process_user_type(callback_query: CallbackQuery, state: FSMContext):
         await callback_query.message.answer("Как к Вам обращаться?", reply_markup=rmk)
         
         await state.set_state(EmployerForm.name)
-
+    await callback_query.message.delete()
 
 
 @router.message(Command('help'))
