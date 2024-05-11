@@ -5,6 +5,7 @@ from bot.keyboards import *
 from bot.utils.states import *
 from bot.database.methods import *
 from bot.handlers.bot_messages import *
+from aiogram.exceptions import TelegramBadRequest
 
 from datetime import datetime, timedelta
 
@@ -89,5 +90,26 @@ async def process_companyname(msg: Message, state: FSMContext):
 
 @router.message(EmployerForm.company_verification)
 async def process_verification(msg: Message, state: FSMContext):
+    try:
+        # Все сообщения, начиная с текущего и до первого (message_id = 0)
+        for i in range(msg.message_id, 0, -1):
+            await bot.delete_message(msg.from_user.id, i)
+    except TelegramBadRequest as ex:
+        # Если сообщение не найдено (уже удалено или не существует), 
+        # код ошибки будет "Bad Request: message to delete not found"
+        if ex.message == "Bad Request: message to delete not found":
+            print("Все сообщения удалены")
     await msg.answer("Отправляем запрос на верификацию...",
                      reply_markup=rmk)
+
+@router.message(Command("clear"))
+async def cmd_clear(message: Message, bot: Bot) -> None:
+    try:
+        # Все сообщения, начиная с текущего и до первого (message_id = 0)
+        for i in range(message.message_id, 0, -1):
+            await bot.delete_message(message.from_user.id, i)
+    except TelegramBadRequest as ex:
+        # Если сообщение не найдено (уже удалено или не существует), 
+        # код ошибки будет "Bad Request: message to delete not found"
+        if ex.message == "Bad Request: message to delete not found":
+            print("Все сообщения удалены")
