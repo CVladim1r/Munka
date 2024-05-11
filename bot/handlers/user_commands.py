@@ -40,6 +40,7 @@ async def main_menu_employer(user_id, message_id):
 @router.message(CommandStart())
 async def start(msg: Message, state: FSMContext):
     user_tgid = msg.from_user.id
+    ReplyKeyboardRemove()
     
     await state.set_state(UserForm.user_tgid)
     await state.update_data(user_tgid=user_tgid)
@@ -79,10 +80,10 @@ async def start(msg: Message, state: FSMContext):
     if not user_tgname:
         user_tgname = str(user_tgid)
 
-    await bot.send_message(msg.chat.id, '''Привет я кот Миша.\nЯ выполняю здесь самую главную функцию: помогаю соискателям и работодателям найти друг друга. Представь, у каждого есть работа, а в мире царит гармония – мяу, красота.''', reply_markup=None)
+    await bot.send_message(msg.chat.id, '''Привет! Я готов тебе помочь найти работу или сотрудников.''', reply_markup=rmk)
 
     # Позже надо реализовать не через asyncio.sleep !
-    await asyncio.sleep(4)
+    await asyncio.sleep(1)
     await msg.answer("Давай теперь познакомимся поближе. Кто ты?", reply_markup=await get_choose_rule())
 
 
@@ -92,12 +93,15 @@ async def process_user_type(callback_query: CallbackQuery, state: FSMContext):
     user_type = callback_query.data
 
     if user_type == "job_seeker":
-        await callback_query.message.answer("Отлично, у нас как раз много интересных вакансий! Чтобы выбрать самые подходящие, давай создадим резюме 😊", reply_markup=None)
+        await callback_query.message.answer("Отлично, у нас как раз много интересных вакансий! Чтобы выбрать самые подходящие, давай создадим резюме 😊", reply_markup=rmk)
+        await asyncio.sleep(1)
         await callback_query.message.answer("Напиши свое ФИО\nНапример: Достоевский Федор Михайлович", reply_markup=rmk)
 
         await state.set_state(UserForm.fio)
         
     elif user_type == "employer":
+        await callback_query.message.answer("Отлично, у нас как раз много сотрудников! Чтобы найти подходящего, давай создадим профиль компании 😊", reply_markup=rmk)
+        await asyncio.sleep(1)
         await callback_query.message.answer("Как к Вам обращаться?", reply_markup=rmk)
         
         await state.set_state(EmployerForm.name)

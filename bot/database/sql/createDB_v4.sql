@@ -51,6 +51,7 @@ CREATE TABLE IF NOT EXISTS employers (
   employer_requirements TEXT,
   employer_working_conditions TEXT,
   employer_image_path VARCHAR(255),
+  employer_verification BOOLEAN DEFAULT false,
   PRIMARY KEY (employer_id),
   UNIQUE KEY employer_tgname (employer_tgname)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

@@ -6,16 +6,11 @@ from aiogram import types
 from aiogram.types import Message, CallbackQuery
 from aiogram.fsm.context import FSMContext
 
-from bot.cities import CITIES
 from bot.keyboards import *
 from bot.utils.states import *
 from bot.database.methods import *
 from bot.utils import normalize_city
 from bot.handlers.bot_messages import *
-
-from bot.handlers.bot_messages import *
-
-# Use BotDispatcher.dp directly where needed
 
 
 async def register_job_seeker(user_tgid, user_tgname, user_fullname, state: FSMContext):
@@ -59,7 +54,6 @@ async def process_age(msg: Message, state: FSMContext):
         await msg.answer("Но если ты просто ошибся с возрастом, то ты можешь его изменить", reply_markup=await get_change_age())
         return
     
-    await state.update_data(age=msg.text)
     await state.update_data(age=msg.text)
     
     await msg.answer("В каком городе планируешь работать?", reply_markup=await get_location_keyboard())

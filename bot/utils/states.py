@@ -1,19 +1,18 @@
 from aiogram.fsm.state import StatesGroup, State
 
 class EmployerForm(StatesGroup):
-    name = State()             # Name and lastname
-    company_type = State()     # Тип компании
+    name = State()                  # Name and lastname
+    company_type = State()          # Тип компании
     
-    individual_info = State()  # ИП       -> company_type
-    physical_info = State()    # Физ лицо -> company_type
-    entity_info = State()      # ООО и АП -> company_type
+    individual_info = State()       # ИП       -> company_type
+    physical_info = State()         # Физ лицо -> company_type
+    entity_info = State()           # ООО и АП -> company_type
     
-    company_info = State()     # Инфа о компании в зависимости от типа
-    company_verification = State()
-    company_name = State()
-    type_business_activity = State()
-    company_employer_location = State()
-    location = State()
+    company_name = State()          # Название компании
+    company_info = State()          # Инфа о компании в зависимости от типа
+    company_location = State()      # Location
+
+    company_verification = State()  # Верификация
 
 class UserForm(StatesGroup):
     nickname = State()
