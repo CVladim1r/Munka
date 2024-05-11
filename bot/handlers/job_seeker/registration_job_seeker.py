@@ -26,20 +26,20 @@ async def register_job_seeker(user_tgid, user_tgname, user_fullname, state: FSMC
     # await db.save_user(user_tgid, user_tgname, user_fullname, user_type="JOB_SEEKER")
 
     # Вместо прямого вызова функций proc_age и process_location будем устанавливать состояния FSM
-    await state.set_state(UserForm.fio)
+    await state.set_state(JobSeekerForm.fio)
 
 
 # Вопрос про ФИО для соискателя
-@router.message(UserForm.fio)
+@router.message(JobSeekerForm.fio)
 async def process_fio(msg: Message, state: FSMContext):
     await state.update_data(fio=msg.text)
     # Продолжаем диалог
-    await state.set_state(UserForm.age)
+    await state.set_state(JobSeekerForm.age)
     await msg.answer("Сколько тебе полных лет?\nНапример: 21", reply_markup=None)
 
 
 # Вопрос про возраст для соискателя
-@router.message(UserForm.age)
+@router.message(JobSeekerForm.age)
 async def process_age(msg: Message, state: FSMContext):
     if int(msg.text) >= 14:
         if not msg.text.isdigit() or not (0 < int(msg.text) < 99):
@@ -47,7 +47,7 @@ async def process_age(msg: Message, state: FSMContext):
             return
     elif msg.text == "писят два":
         await msg.answer("Отсылочка )))\nЛадно, давай повторим..", reply_markup=rmk)
-        await state.set_state(UserForm.age)
+        await state.set_state(JobSeekerForm.age)
 
         await msg.answer("Сколько тебе полных лет?\nНапример: 21", reply_markup=rmk)
         return
@@ -60,7 +60,7 @@ async def process_age(msg: Message, state: FSMContext):
     
     await state.update_data(age=msg.text)
     await msg.answer("В каком городе планируешь работать?", reply_markup=get_location_r)
-    await state.set_state(UserForm.location)
+    await state.set_state(JobSeekerForm.location)
 
 
 # Если вдруг пользователь ошибся
@@ -68,14 +68,14 @@ async def process_age(msg: Message, state: FSMContext):
 async def change_age(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer("Давайте попробуем еще раз")
     await callback_query.message.answer("Сколько тебе полных лет?\nНапример: 21", reply_markup=rmk)
-    await state.set_state(UserForm.age)
+    await state.set_state(JobSeekerForm.age)
 
-@router.message(UserForm.location)
+@router.message(JobSeekerForm.location)
 async def process_location_msk_spb(msg: Message, state: FSMContext):
     location_text = msg.text.strip()
 
     if location_text.lower().startswith('другое'):
-        await state.set_state(UserForm.location_retry)
+        await state.set_state(JobSeekerForm.location_retry)
         await msg.answer('Напиши свой город. Например: Сочи')
         return
 
@@ -90,10 +90,10 @@ async def process_location_msk_spb(msg: Message, state: FSMContext):
     data['location'] = normalized_location
     await state.update_data(location=location_text)
 
-    await state.set_state(UserForm.citizenship)  # Переход к следующему шагу
+    await state.set_state(JobSeekerForm.citizenship)  # Переход к следующему шагу
     await msg.answer("Ты гражданин какой страны?", reply_markup=get_citizenship_r)
 
-@router.message(UserForm.location_retry)
+@router.message(JobSeekerForm.location_retry)
 async def process_location_retry(msg: Message, state: FSMContext):
     if 'location' not in await state.get_data():
         location_text = msg.text.strip()
@@ -110,25 +110,25 @@ async def process_location_retry(msg: Message, state: FSMContext):
             data['location'] = normalized_location
             await state.update_data(location=location_text)
 
-            await state.set_state(UserForm.desired_position)  # Переход к следующему шагу
+            await state.set_state(JobSeekerForm.desired_position)  # Переход к следующему шагу
             await msg.answer("Выбери желаемую должность:", reply_markup=get_position_keyboard)
         else:
             await msg.answer("Вы не ввели название города. Пожалуйста, введите город еще раз.")
     else:
-        await state.set_state(UserForm.desired_position)
+        await state.set_state(JobSeekerForm.desired_position)
         await msg.answer("Выбери желаемую должность:", reply_markup=get_position_keyboard)
 
 
 # Предпочтиаемая зарплата
-@router.message(UserForm.desired_position)
+@router.message(JobSeekerForm.desired_position)
 async def process_desired_position(msg: Message, state: FSMContext):
     await state.update_data(desired_position=msg.text)
-    await state.set_state(UserForm.desired_salary_level)
+    await state.set_state(JobSeekerForm.desired_salary_level)
     await msg.answer("Какую зарплату ты бы хотел получать?\nНапример: 50 000", reply_markup=rmk)
 
 
 # Занятость соискателя (Полная или частичная)
-@router.message(UserForm.desired_salary_level)
+@router.message(JobSeekerForm.desired_salary_level)
 async def process_desired_salary_level(msg: Message, state: FSMContext):
     await state.update_data(desired_salary_level=msg.text)
     await msg.answer("Какая занятость тебя интересует?", reply_markup=await get_employment_keyboard())
@@ -146,62 +146,62 @@ async def process_desired_positionv1(callback_query: CallbackQuery, state: FSMCo
         return
 
     await state.update_data(employment_type=new_employment_type)
-    await state.set_state(UserForm.work_experience)
+    await state.set_state(JobSeekerForm.work_experience)
     await message.answer("Был ли у тебя опыт работы?", reply_markup=get_yes_no_keyboard)
 
 
 # proc_experience, распрашиваем про опыт если есть, либо скпиаем если нет :(
-@router.message(UserForm.work_experience)
+@router.message(JobSeekerForm.work_experience)
 async def proc_experience(msg: Message, state: FSMContext):
     if msg.text.lower() == 'да':
-        await state.set_state(UserForm.work_company_name)
+        await state.set_state(JobSeekerForm.work_company_name)
         await msg.answer("Отлично! Расскажите о своем опыте работы. Напишите название предыдущего места работы.", reply_markup=rmk)
     elif msg.text.lower() == 'нет':
         await state.update_data(work_experience="Нет опыта работы")
-        await state.set_state(UserForm.additional_info)
+        await state.set_state(JobSeekerForm.additional_info)
         await msg.answer("У тебя есть навыки, с которыми то хотел бы поделиться?", reply_markup=rmk)
     else:
         await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=rmk)
 
 
 # Сохраняем данные о названии Компании и задаем вопрос про период работы
-@router.message(UserForm.work_company_name)
+@router.message(JobSeekerForm.work_company_name)
 async def process_experience_details(msg: Message, state: FSMContext):
     await state.update_data(work_company_name=msg.text)
-    await state.set_state(UserForm.work_experience_period)
+    await state.set_state(JobSeekerForm.work_experience_period)
     await msg.answer("Введите период работы в формате: 11.2020-09.2022", reply_markup=rmk)
 
 
 # Сохраняем данные о периоде работы и задаем вопрос про должность
-@router.message(UserForm.work_experience_period)
+@router.message(JobSeekerForm.work_experience_period)
 async def process_experience_period(msg: Message, state: FSMContext):
     await state.update_data(work_experience_period=msg.text)
-    await state.set_state(UserForm.work_experience_position)
+    await state.set_state(JobSeekerForm.work_experience_position)
     await msg.answer("Какую должность ты занимал?", reply_markup=rmk)
 
 
 # Сохраняем данные о должности и задаем вопрос про опыт в опыте?? Вот это игра слов, вот это я молодец )))
-@router.message(UserForm.work_experience_position)
+@router.message(JobSeekerForm.work_experience_position)
 async def process_experience_position(msg: Message, state: FSMContext):
     await state.update_data(work_experience_position=msg.text)
-    await state.set_state(UserForm.work_experience_duties)
+    await state.set_state(JobSeekerForm.work_experience_duties)
     await msg.answer("Расскажи, какие у тебя были обязанности на этой работе? Старайся отвечать на этот вопрос максимально кратко и лаконично, при этом не упуская главной сути", reply_markup=rmk)
     await msg.answer("Например: Я варил для моих посетителей – котиков, самое лучшее молоко, с пенкой. А в конце смены, я подметал полы от следов лапок, и вел учет, сколько кошачьей мяты поступило в кассу, а сколько было потрачено", reply_markup=rmk)
 
 
 # Сохраняем данные о должности и задаем вопрос про опыт в опыте?? Вот это игра слов, вот это я молодец )))
-@router.message(UserForm.work_experience_duties)
+@router.message(JobSeekerForm.work_experience_duties)
 async def process_experience_duties(msg: Message, state: FSMContext):
     await state.update_data(work_experience_duties=msg.text)
-    await state.set_state(UserForm.work_experience_another)
+    await state.set_state(JobSeekerForm.work_experience_another)
     await msg.answer("Был ли у вас другой опыт работы?", reply_markup=get_yes_no_keyboard)
 
 
 # process_experience_another
-@router.message(UserForm.work_experience_another)
+@router.message(JobSeekerForm.work_experience_another)
 async def process_experience_another(msg: Message, state: FSMContext):
     if msg.text.lower() == 'да':
-        await state.set_state(UserForm.work_company_name)
+        await state.set_state(JobSeekerForm.work_company_name)
         await msg.answer("Отлично! Напишите название предыдущего места работы.", reply_markup=rmk)
         
     elif msg.text.lower() == 'нет':
@@ -213,7 +213,7 @@ async def process_experience_another(msg: Message, state: FSMContext):
             "work_experience_duties": data.get("work_experience_duties")
         }
         await state.update_data(work_experience_data=new_data)
-        await state.set_state(UserForm.additional_info)
+        await state.set_state(JobSeekerForm.additional_info)
         
         await msg.answer("Все круги ада пройдены! 👹\nТеперь финишная прямая.", reply_markup=rmk)
         await msg.answer("Хочешь ли ты добавить дополнительную информацию информацию о себе?", reply_markup=get_yes_no_keyboard)
@@ -222,33 +222,33 @@ async def process_experience_another(msg: Message, state: FSMContext):
 
 
 # process_additional_info
-@router.message(UserForm.additional_info)
+@router.message(JobSeekerForm.additional_info)
 async def process_additional_info(msg: Message, state: FSMContext):
     if msg.text.lower() == 'да':
-        await state.set_state(UserForm.additional_info_details)
+        await state.set_state(JobSeekerForm.additional_info_details)
         await msg.answer("Здесь ты можешь рассказать о своих навыках и умениях", reply_markup=rmk)
     elif msg.text.lower() == 'нет':
-        await state.set_state(UserForm.photo_upload)
+        await state.set_state(JobSeekerForm.photo_upload)
         await msg.answer("Чего-то не хватает. Соли? Перца? Фотографии! Ждем твое фото 🔥", reply_markup=rmk)
     else:
         await msg.answer("Пожалуйста, ответьте 'да' или 'нет'.", reply_markup=get_yes_no_keyboard)
 
 
 # process_additional_info_details
-@router.message(UserForm.additional_info_details)
+@router.message(JobSeekerForm.additional_info_details)
 async def process_additional_info_details(msg: Message, state: FSMContext):
     await state.update_data(additional_info=msg.text)
-    await state.set_state(UserForm.photo_upload)
+    await state.set_state(JobSeekerForm.photo_upload)
     await msg.answer("Чего-то не хватает. Соли? Перца? Фотографии! Ждем твое фото 🔥", reply_markup=await get_skip_button())
 
 
 @router.callback_query(lambda c: c.data == 'skip')
 async def skip_photo(callback_query: CallbackQuery, state: FSMContext):
     await callback_query.answer()
-    await state.set_state(UserForm.resume_check)
+    await state.set_state(JobSeekerForm.resume_check)
     
 
-@router.message(UserForm.photo_upload)
+@router.message(JobSeekerForm.photo_upload)
 async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
     if msg.photo:
         try:
@@ -290,7 +290,7 @@ async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
             
             await bot.send_photo(msg.chat.id, photo=types.FSInputFile(file_save_path), caption=resume, reply_markup=await get_save_restart_keyboard())
             '''
-            await state.set_state(UserForm.resume_check)
+            await state.set_state(JobSeekerForm.resume_check)
 
         except Exception as e:
             print(f"An error occurred while processing the photo: {e}")
@@ -301,7 +301,7 @@ async def photo_upload_and_resume_check(msg: Message, state: FSMContext):
         return
 
 
-@router.message(UserForm.resume_check)
+@router.message(JobSeekerForm.resume_check)
 async def process_resume_check(msg: Message, state: FSMContext):
     data = await state.get_data()
 
@@ -339,7 +339,7 @@ async def process_resume_check(msg: Message, state: FSMContext):
 @router.callback_query()
 async def proc_con(callback_query: CallbackQuery, state: FSMContext):
     if callback_query.data == 'save_resume' or callback_query.message.text.lower() in ['да', 'save_resume', 'сохранить', '/save_resume', 'Сохранить', 'ыфму', 'Да', 'ДА']:
-        await state.set_state(UserForm.resume_confirmation)
+        await state.set_state(JobSeekerForm.resume_confirmation)
         await state.update_data(resume_confirmation="Отправлено")
         await callback_query.message.answer("Резюме отправлено на модерацию.\nВ среднем, она выполняется за 5-10 минут.\nА пока можно пойти и выпить чаю ☕️\nты этого точно заслуживаешь!")
         await main_menu_job_seeker(callback_query.from_user.id, callback_query.message.message_id)
@@ -362,7 +362,7 @@ async def restart_resume(msg: Message, state: FSMContext):
     await process_fio(msg=msg, state=state)
     
 
-@router.message(UserForm.resume_confirmation)
+@router.message(JobSeekerForm.resume_confirmation)
 async def process_resume_confirmation(msg: Message, state: FSMContext):
     if msg.text.lower()=='да':
         await msg.answer("Резюме отправлено на модерацию.\nВ среднем, она выполняется за 10 минут.\nА пока можно пойти и выпить чаю ☕️\nты этого точно заслуживаешь!")

@@ -77,7 +77,7 @@ async def process_user_type(callback_query: CallbackQuery, state: FSMContext):
         await asyncio.sleep(2)
         await callback_query.message.answer("Напиши свое ФИО\nНапример: Достоевский Федор Михайлович", reply_markup=rmk)
 
-        await state.set_state(UserForm.fio)
+        await state.set_state(JobSeekerForm.fio)
         
     elif user_type == "employer":
         await callback_query.message.answer("Отлично, у нас как раз много сотрудников! Чтобы найти подходящего, давай создадим профиль компании 😊", reply_markup=rmk)

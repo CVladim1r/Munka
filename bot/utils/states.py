@@ -20,6 +20,12 @@ class UserForm(StatesGroup):
     user_fullname = State()
     user_tgname = State()
     
+class JobSeekerForm(StatesGroup):
+    user_tgid = State()
+    user_language_code = State()
+    user_fullname = State()
+    user_tgname = State()
+    
     fio = State()
     age = State()
     citizenship = State()
