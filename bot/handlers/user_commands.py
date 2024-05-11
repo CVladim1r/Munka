@@ -15,7 +15,6 @@ from bot.utils.states import *
 
 from bot.handlers.bot_messages import *
 
-from aiogram.types.input_file import InputFile
 
 router = Router()
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
@@ -60,7 +59,7 @@ async def start(msg: Message, state: FSMContext):
     user_language_code = msg.from_user.language_code
     await state.update_data(user_language_code=user_language_code)
 
-
+    # Если нет username в tg, то используем id
     if not user_tgname:
         user_tgname = str(user_tgid)
 
@@ -110,6 +109,7 @@ async def about_command(msg: Message):
     user_data = await get_user_data(user_id)
 
     if user_data:
-        await main_menu_user(msg.from_user.id, msg.message_id)
+        #await main_menu_user(msg.from_user.id, msg.message_id)
+        ...
     else:
         await msg.answer('SuckMyDickBROOO', reply_markup=None)

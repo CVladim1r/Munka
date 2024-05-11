@@ -2,7 +2,7 @@ from aiogram import Router, F, Bot
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
 
-async def main_menu_user(bot, user_id, message_id):
+async def main_menu_job_seeker(bot, user_id, message_id):
     main_text = "Искать вакансии\n"
     main_text += "Личный кабинет\n"
     main_text += "Редактировать резюме\n"

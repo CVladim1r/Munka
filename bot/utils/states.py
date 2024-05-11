@@ -15,27 +15,40 @@ class EmployerForm(StatesGroup):
     company_verification = State()  # Верификация
 
 class UserForm(StatesGroup):
-    nickname = State()
-    regStart = State()
-
-    description = State()
-    company_name = State()
+    fio = State()
+    age = State()
+    citizenship = State()
     
     location = State()
     location_text = State()
     location_retry = State()
-
-    fullname = State() 
-    citizenship = State()
+    
     desired_position = State()
-    desired_position_v1 = State()
-    work_experience = State()
+    desired_salary_level = State()
+    
+    work_experience = State()           # -> work_experience_data
+    work_company_name = State()         # -> work_experience_data
+    work_experience_period = State()    # -> work_experience_data
+    work_experience_position = State()  # -> work_experience_data
+    work_experience_duties = State()    # -> work_experience_data
+    work_experience_another = State()   # -> work_experience_data
+    work_experience_data = State()      # << work_experience_data
+    
+    additional_info = State()
+    additional_info_details = State()
+    
+    photo_upload = State()
+    photo_path = State()
+    
+    resume_check = State()
+    
     
     resume_check = State()
     resume_confirmation = State()
     resume_start = State()
 
     resume_edit = State()
+    
     experience_data = State()
     experience_details = State()
     experience_another = State()
@@ -55,8 +68,6 @@ class UserForm(StatesGroup):
     user_language_code = State()
     age = State()
     fio = State()
-
-    photo_upload = State()
 
     additional_info = State()
     additional_info_details = State()
