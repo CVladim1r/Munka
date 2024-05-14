@@ -24,15 +24,6 @@ get_save_restart_keyboard = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 
-get_choose_rule = ReplyKeyboardMarkup(
-    keyboard=[
-        [
-            KeyboardButton(text="Соискатель"),
-            KeyboardButton(text="Работодатель")
-        ]
-    ]
-)
-
 company_type = ReplyKeyboardMarkup(
     keyboard=[
         [
@@ -44,10 +35,33 @@ company_type = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 
+get_citizenship_r = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="РФ"),
+            KeyboardButton(text="Другое")
+        ]
+    ],    
+    resize_keyboard=True,
+)
+
 finReg = ReplyKeyboardMarkup(
     keyboard=[
         [
             KeyboardButton(text="✅ Подтвердить")
+        ]
+    ]
+)
+
+
+get_location_r = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Питер"),
+            KeyboardButton(text="Москва"),
+        ],
+        [
+            KeyboardButton(text="Другое")
         ]
     ]
 )

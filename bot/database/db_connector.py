@@ -1,4 +1,4 @@
-import mysql.connector # type: ignore
+import mysql.connector 
 import logging
 from ..config_reader import Settings
 

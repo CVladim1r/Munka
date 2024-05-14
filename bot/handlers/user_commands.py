@@ -5,9 +5,6 @@ from aiogram.types import Message, CallbackQuery
 from aiogram.filters import Command, CommandStart
 from aiogram.fsm.context import FSMContext
 
-from bot.handlers.employer.main_employer import main_menu_employer
-from bot.handlers.admin.main_admin import main_menu_admin
-
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
 from bot.database.methods import *
@@ -15,28 +12,12 @@ from bot.utils.states import *
 
 from bot.handlers.bot_messages import *
 
-from aiogram.types.input_file import InputFile
 
 router = Router()
 bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
 
-'''
-async def main_menu_user(user_id, message_id):
-    main_text = "Искать вакансии\n"
-    main_text += "Личный кабинет\n"
-    main_text += "Редактировать резюме\n"
-    main_text += "О боте\n"
-    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
-async def main_menu_employer(user_id, message_id):
-    main_text = "Искать вакансии:\n"
-    main_text += "Личный кабинет\n"
-    main_text += "Редактировать резюме\n"
-    main_text += "О боте\n"
-    await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_employer_buttons(), disable_notification=True)
 
-'''
-
-# job FINDER
+# /start
 @router.message(CommandStart())
 async def start(msg: Message, state: FSMContext):
     user_tgid = msg.from_user.id
@@ -75,11 +56,10 @@ async def start(msg: Message, state: FSMContext):
     user_language_code = msg.from_user.language_code
     await state.update_data(user_language_code=user_language_code)
 
-
-
+    # Если нет username в tg, то используем id
     if not user_tgname:
         user_tgname = str(user_tgid)
-
+    # Удаляем работодателей
     await bot.send_message(msg.chat.id, '''Привет! Я готов тебе помочь найти работу или сотрудников.''', reply_markup=rmk)
 
     # Позже надо реализовать не через asyncio.sleep !
@@ -87,25 +67,24 @@ async def start(msg: Message, state: FSMContext):
     await msg.answer("Давай теперь познакомимся поближе. Кто ты?", reply_markup=await get_choose_rule())
 
 
-
 @router.callback_query(lambda c: c.data in ["job_seeker", "employer"])
 async def process_user_type(callback_query: CallbackQuery, state: FSMContext):
     user_type = callback_query.data
+    await callback_query.message.delete()
 
     if user_type == "job_seeker":
         await callback_query.message.answer("Отлично, у нас как раз много интересных вакансий! Чтобы выбрать самые подходящие, давай создадим резюме 😊", reply_markup=rmk)
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
         await callback_query.message.answer("Напиши свое ФИО\nНапример: Достоевский Федор Михайлович", reply_markup=rmk)
 
-        await state.set_state(UserForm.fio)
+        await state.set_state(JobSeekerForm.fio)
         
     elif user_type == "employer":
         await callback_query.message.answer("Отлично, у нас как раз много сотрудников! Чтобы найти подходящего, давай создадим профиль компании 😊", reply_markup=rmk)
-        await asyncio.sleep(1)
+        await asyncio.sleep(2)
         await callback_query.message.answer("Как к Вам обращаться?", reply_markup=rmk)
         
         await state.set_state(EmployerForm.name)
-
 
 
 @router.message(Command('help'))
@@ -121,13 +100,13 @@ async def help_command(msg: Message):
     await msg.answer(help_text, reply_markup=None)
     
 
-
 @router.message(Command('about'))
 async def about_command(msg: Message):
     user_id = msg.from_user.id
     user_data = await get_user_data(user_id)
 
     if user_data:
-        await main_menu_user(msg.from_user.id, msg.message_id)
+        #await main_menu_user(msg.from_user.id, msg.message_id)
+        ...
     else:
         await msg.answer('SuckMyDickBROOO', reply_markup=None)
