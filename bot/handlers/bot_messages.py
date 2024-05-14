@@ -50,6 +50,8 @@ async def main_menu_user(user_id, message_id):
     main_text += "Редактировать резюме\n"
     main_text += "О боте\n"
     await bot.send_message(user_id, main_text, reply_markup=await get_choose_menu_user_buttons(), disable_notification=True)
+    
+    
 @router.message(F.text == '👤 Личный кабинет')
 async def personal_cabinet(msg: Message):
     user_id = msg.from_user.id

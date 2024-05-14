@@ -13,12 +13,32 @@ get_send_or_dislike_resume_keyboard = ReplyKeyboardMarkup(
     resize_keyboard=True,
 )
 
+get_save_restart_keyboard = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Сохранить"),
+            KeyboardButton(text="Начать заново"),
+            KeyboardButton(text="Изменить")
+        ]
+    ],
+    resize_keyboard=True,
+)
+
+get_choose_rule = ReplyKeyboardMarkup(
+    keyboard=[
+        [
+            KeyboardButton(text="Соискатель"),
+            KeyboardButton(text="Работодатель")
+        ]
+    ]
+)
+
 company_type = ReplyKeyboardMarkup(
     keyboard=[
         [
-            KeyboardButton(text="Индивидуальный предприниматель (ИП)"),
+            KeyboardButton(text="ИП"),
             KeyboardButton(text="Физическое лицо"),
-            KeyboardButton(text="Юридическое лицо (ООО, АО)")
+            KeyboardButton(text="Юр лицо (ООО, АО)")
         ]
     ],
     resize_keyboard=True,
