@@ -59,7 +59,7 @@ async def start(msg: Message, state: FSMContext):
     # Если нет username в tg, то используем id
     if not user_tgname:
         user_tgname = str(user_tgid)
-
+    # Удаляем работодателей
     await bot.send_message(msg.chat.id, '''Привет! Я готов тебе помочь найти работу или сотрудников.''', reply_markup=rmk)
 
     # Позже надо реализовать не через asyncio.sleep !
