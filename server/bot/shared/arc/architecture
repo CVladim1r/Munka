@@ -1,0 +1,50 @@
+server/
+│
+├── back-app/
+│   ├── __init__.py
+│   ├── app.py               # Основной файл FastAPI приложения
+│   ├── database.py          # Подключение к базе данных
+│   ├── models.py            # Модели базы данных
+│   ├── views.py             # Обработчики маршрутов (endpoints)
+│   ├── schemas.py           # Pydantic схемы для валидации данных
+│   ├── static/              # Статические файлы (CSS, JS, изображения)
+│   └── templates/           # HTML-шаблоны
+│
+├── bot/
+│   ├── __init__.py
+│   ├── main.py              # Основной файл для запуска бота
+│   ├── bot_messages.py      # Обработчики сообщений
+│   ├── user_commands.py     # Обработчики команд пользователя
+│   ├── handlers/
+│   │   ├── __init__.py
+│   │   ├── user_commands.py
+│   │   ├── bot_messages.py
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── cities.py
+│   │   ├── format_data.py
+│   │   ├── states.py
+│   ├── keyboards/
+│   │   ├── __init__.py
+│   │   ├── inline.py
+│   │   ├── reply.py
+│   ├── database/
+│   │   ├── __init__.py
+│   │   ├── db_connector.py
+│   │   ├── methods.py
+│   └── config_reader.py     # Конфигурационные файлы
+│
+├── miniapp/
+│   ├── __init__.py
+│   ├── miniapp.py           # Основной файл miniapp
+│   ├── handlers.py          # Обработчики команд и сообщений
+│   ├── static/              # Статические файлы для miniapp
+│   └── templates/           # HTML-шаблоны для miniapp
+│
+├── userfiles/               # Директория для хранения пользовательских файлов
+│
+├── start_bot.py             # Скрипт для запуска бота
+│
+├── start_back_app.py        # Скрипт для запуска веб-приложения
+│
+└── start_miniapp.py         # Скрипт для запуска miniapp

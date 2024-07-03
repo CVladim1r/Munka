@@ -1,1 +1,0 @@
-from . import main_job_seeker, registration_job_seeker
