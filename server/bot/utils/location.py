@@ -1,5 +1,5 @@
 from bot.utils.cities import CITIES
-# Поиск города для сохранения в normalize_location
+
 async def normalize_city(city_name):
     print(f"Searching for city: {city_name}")
     for key, variants in CITIES.items():

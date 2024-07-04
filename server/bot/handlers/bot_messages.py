@@ -1,47 +1,17 @@
-from aiogram import Router, F, Bot
-from aiogram.types import Message, CallbackQuery
-from aiogram.fsm.context import FSMContext
-import asyncio
 import json
-import os
-import aiogram
-from aiogram import Router, F, Bot, types
-from aiogram.types import Message, CallbackQuery
-from aiogram.filters import Command, CommandStart
-from aiogram.methods.send_photo import SendPhoto
 
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.state import StatesGroup, State
-from aiogram.fsm.storage.base import (
-    BaseEventIsolation,
-    BaseStorage,
-    StateType,
-    StorageKey,
-)
-from bot.utils.cities import CITIES
-from bot.keyboards import *
-from bot.database.methods import *
+from aiogram.types import Message
+from aiogram import Router, F, Bot, types
+from aiogram.client.default import DefaultBotProperties
 
 from bot.handlers.bot_messages import *
-
-from bot.utils.states import *
-from bot.utils.format_data import *
-from bot.utils.states import *
-from bot.utils import format_vacancy
-
-from bot.keyboards.inline import *
-from bot.keyboards.reply import *
-
-from bot.database.db_connector import *
-from bot.database.methods import *
-
-from bot.config_reader import config
+from bot.utils import *
+from bot.keyboards import *
+from bot.database.methods import get_user_data 
+from bot.config_reader import Settings
 
 
-router = Router()
-bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
-
-
+bot = Bot(Settings().BOT_TOKEN.get_secret_value(), default=DefaultBotProperties(parse_mode='HTML'))
 router = Router()
 
 async def main_menu_user(user_id, message_id):
@@ -71,7 +41,7 @@ async def personal_cabinet(msg: Message):
              f"<i>Опыт работы:</i>\n" \
              
     experience = json.loads(data['user_experience'])
-    if isinstance(experience, dict):  # Проверяем, что опыт работы представлен словарем (ихвильних)
+    if isinstance(experience, dict):
         resume += f"<b>{experience.get('company_name', 'Не указано')}</b>\n" \
                   f"Период работы: {experience.get('experience_period', 'Не указано')}\n" \
                   f"Должность: {experience.get('experience_position', 'Не указано')}\n" \

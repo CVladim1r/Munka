@@ -1,2 +1,2 @@
-from . import db_connector
-from .methods import create, delete, get, other, update, vacancy
+from . import db_connector, methods
+from .methods import create, delete, get, other, update

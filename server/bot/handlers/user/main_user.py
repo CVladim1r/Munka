@@ -1,9 +1,11 @@
 from bot.keyboards.inline import *
 from bot.keyboards.reply import *
-from bot.config_reader import config
-from aiogram import Router, F, Bot
+from bot.config_reader import Settings
 
-bot = Bot(config.bot_token.get_secret_value(), parse_mode='HTML')
+from aiogram import Router, F, Bot
+from aiogram.client.default import DefaultBotProperties
+
+bot = Bot(Settings().BOT_TOKEN.get_secret_value(), default=DefaultBotProperties(parse_mode='HTML'))
 
 async def main_menu_job_seeker(bot, user_id, message_id):
     await bot.send_message(user_id, "Вот мы и в главном меню. Куда отпарвимся сейчас?", reply_markup=rmk)

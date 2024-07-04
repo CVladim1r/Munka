@@ -26,7 +26,7 @@ async def get_choose_rule():
     Inlinekeyboard = InlineKeyboardMarkup(
         inline_keyboard=[
             [
-                InlineKeyboardButton(text="Соискатель", callback_data="job_seeker"),
+                InlineKeyboardButton(text="Соискатель", callback_data="user"),
                 InlineKeyboardButton(text="Работодатель", callback_data="employer")
             ]
         ]
